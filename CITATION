@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using the following DOI.
+title: Replicating research paper "Volatility Timing under Low-Volatility Strategy"
+authors:
+  - name: LEHBIBEN NAIM
+    email: naim.lehbiben@dauphine.eu
+  - name:  BADR EL-HAMZAOUI
+    email: badr-eddine.el-hamzaoui@dauphine.eu
+license: MIT
