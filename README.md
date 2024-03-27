@@ -1,5 +1,4 @@
-# 
-Volatility Timing under Low-Volatility Strategy
+# Volatility Timing under Low-Volatility Strategy
 ## Objectives
 
 This project is part of the Bloomberg API course in the Master's program in Economics & Financial Engineering at Paris Dauphine University - PSL . The aim is to replicate and analyze the methods and findings of the research article "Volatility Timing under
