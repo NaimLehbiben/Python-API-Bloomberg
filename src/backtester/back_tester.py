@@ -1,11 +1,11 @@
 import pandas as pd
 from datetime import datetime
 from tqdm import tqdm
-from utils.utilities import Utilities
+from src.utils.utilities import Utilities
 from src.strategies.strategies import Strategy
 from src.base.quote import Quote
 from src.base.position import Position
-import utils.config
+import src.utils.config
 
 class AssetIndex:
     """
@@ -48,7 +48,7 @@ class AssetIndex:
         Returns:
         None
         """
-        previous_date = Utilities.get_rebalancing_date(date, step = utils.config.STEP_VOL)
+        previous_date = Utilities.get_rebalancing_date(date, step = src.utils.config.STEP_VOL)
         universe = self.strategy.generate_signals(global_market_data,universe,date,previous_date)
         
         if date == end_date:

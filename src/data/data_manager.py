@@ -9,7 +9,7 @@ class DataManager:
     
     @staticmethod
     def get_historical_compositions(start_date : datetime, end_date : datetime, ticker : str):
-        strFields = ["INDX_MWEIGHT_HIST"]  # champ pour récuperer les compositions de l'indice
+        strFields = ["INDX_MWEIGHT_HIST"]  
         blp = BLP()
         
         rebalancing_dates = Utilities.create_rebalancing_calendar(start_date, end_date)
