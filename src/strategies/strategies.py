@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from datetime import datetime
 
-from utils.utilities import Utilities
+from src.utils.utilities import Utilities
 
 
 class Strategy(ABC):
