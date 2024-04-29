@@ -1,10 +1,10 @@
 import pandas as pd
 from datetime import datetime
-from tqdm import tqdm
+
 from utils.utilities import Utilities
-from src.strategies.strategies import Strategy
-from src.base.quote import Quote
-from src.base.position import Position
+from strategies import Strategy
+from base.quote import Quote
+from base.position import Position
 import utils.config
 
 class AssetIndex:
@@ -48,29 +48,18 @@ class AssetIndex:
         Returns:
         None
         """
-        previous_date = Utilities.get_rebalancing_date(date, step = utils.config.STEP_VOL)
-        universe = self.strategy.generate_signals(global_market_data,universe,date,previous_date)
         
-        if date == end_date:
-            next_date=date
-        else:
-            next_date = Utilities.get_rebalancing_date(date, step=1)
-            
-        universe = Utilities.check_universe(universe, global_market_data, date, next_date)
-        # Calculer le poids pour chaque actif financier dans le décile
-        weight = 1 / len(universe)
+        universe, next_date = self.strategy.generate_signals(global_market_data,universe,date)
         
-        new_weights = { ticker : weight for ticker in universe}
-
         
-        self.update_historical_prices(new_weights,global_market_data,date, next_date)
+        self.update_historical_prices(universe,global_market_data,date, next_date)
 
         
         self.last_price = self.price_history[-1]
         
         # computing and updating the current and historical positions
 
-        self.update_current_and_historical_positions(date, new_weights)
+        self.update_current_and_historical_positions(date, universe)
   
     
     def update_price_history_from_list(self, new_quotes: list[Quote]):
@@ -222,8 +211,8 @@ class BackTesting:
           AssetIndex: An instance of the AssetIndex class representing the backtested asset index or strategy.
           """
           
-          start_date = params.get("start_date", None).date()
-          end_date = params.get("end_date", None).date()
+          start_date = params.get("start_date", None)
+          end_date = params.get("end_date", None)
           currency = params.get("currency", None)
           ticker = params.get("ticker", None)
           use_pickle_universe = params.get("use_pickle_universe", None)
