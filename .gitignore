@@ -151,3 +151,8 @@ cython_debug/
 #Ignore Data which are to heavy
 
 data/
+
+#Ignore Ds_Store
+
+.DS_Store
+
