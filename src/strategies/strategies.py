@@ -7,6 +7,9 @@ from utils.utilities import Utilities
 import utils.config
 import numpy as np
 
+from src.utils.utilities import Utilities
+
+
 class Strategy(ABC):
 
 
