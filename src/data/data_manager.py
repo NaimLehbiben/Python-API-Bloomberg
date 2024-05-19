@@ -3,7 +3,7 @@ import pickle
 from data_loader import BLP
 from datetime import datetime
 from utils.utilities import Utilities
-from data_loader import BLP
+
 
 class DataManager:
     

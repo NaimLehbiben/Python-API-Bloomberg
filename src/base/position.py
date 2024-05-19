@@ -1,7 +1,4 @@
 
-
-
-
 class Position:
     """
     A class representing a position in a portfolio.
