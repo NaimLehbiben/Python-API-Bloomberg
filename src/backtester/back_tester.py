@@ -1,5 +1,4 @@
-import pandas as pd
-from datetime import datetime
+
 from tqdm import tqdm
 from src.utils.utilities import Utilities
 from src.strategies.strategies import Strategy
@@ -7,11 +6,8 @@ from src.base.quote import Quote
 from src.base.position import Position
 import src.utils.config
 
-from utils.utilities import Utilities
-from strategies import Strategy
-from base.quote import Quote
-from base.position import Position
-import utils.config
+
+
 
 class AssetIndex:
     """
@@ -197,7 +193,23 @@ class AssetIndex:
             self.historical_position[date] = positions
 
         
+    def get_port_file(self, ptf_name):
         
+        # Initialisation d'une liste pour stocker les données
+        data = []
+        
+        # Parcours du dictionnaire et ajout des données à la liste
+        for date, positions in self.historical_position.items():
+            for position in positions:
+                data.append({
+                    "Portfolio Name": ptf_name,
+                    "Ticker": position.ticker,
+                    "Weight": position.weight,
+                    "Date": date
+                })
+        
+        pd.DataFrame(data).to_csv( os.path.dirname(__file__).replace("src\\backtester", "data") 
+                                  + "\\port.csv", sep=';', index=False, decimal=',')
 
 
 
