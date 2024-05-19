@@ -1,7 +1,9 @@
+
 from pandas_market_calendars import get_calendar
 import pandas as pd
 import numpy as np
 import pickle
+import os
 from datetime import datetime, timedelta
 import pandas_market_calendars as mcal
 import warnings
@@ -30,10 +32,12 @@ class Utilities:
         nyse = mcal.get_calendar('NYSE')
 
         # Générer les dates de rebalancement à la fin de chaque mois
-        rebalance_dates = nyse.valid_days(start_date=start_date, end_date=end_date)
-        rebalance_dates = [date.to_pydatetime().date() for i, date in enumerate(rebalance_dates[:-1]) if rebalance_dates[i + 1].month != date.month]
-
-        return rebalance_dates
+        valid_dates = nyse.valid_days(start_date=start_date, end_date=end_date)
+        rebalnce_dates = [date.to_pydatetime().date() for i, date in enumerate(valid_dates[:-1]) if valid_dates[i+1].month != date.month]
+        rebalnce_dates.append(valid_dates[-1].date())
+        
+        return rebalnce_dates
+    
 
 
     
@@ -86,8 +90,13 @@ class Utilities:
     
         Returns:
         List[str]: List of ticker symbols for which market data is available between the given dates.
-        """        
-        return [ticker for ticker in universe if Utilities.check_data_between_dates(market_data[ticker], date, next_date)]
+        """   
+        universe = [ticker for ticker in universe if Utilities.check_data_between_dates(market_data[ticker], date, next_date)]
+        
+        if not universe:
+            raise Exception("Investement universe is empty!")
+        
+        return universe
     
     @staticmethod
     def check_data_between_dates(df, start_date, end_date):
@@ -105,6 +114,9 @@ class Utilities:
         # Vérification si les dates existent dans l'index
         if start_date not in df.index or end_date not in df.index:
             return False
+        
+        if start_date==end_date:
+            return True
         
         # Vérification si des données existent entre les deux dates
         data_subset = df.loc[(df.index > start_date) & (df.index < end_date)]
@@ -135,22 +147,62 @@ class Utilities:
 
         return volatility
     
+    def get_ptf_returns(data, tickers, start_date, end_date):
+        
+        selected_data = pd.concat([data[ticker].loc[start_date:end_date] for ticker in tickers.keys() if ticker in data], axis=1)
+        
+        # Calculer les rendements pour chaque ticker
+        returns = selected_data.pct_change(fill_method=None)
+        
+        # Calculer les rendements pondérés
+        weighted_returns = returns.apply(lambda col: col * tickers.get(col.name, 0.0))
+        
+        # Calculer la moyenne des rendements pondérés pour chaque date
+        mean_weighted_returns_by_date = weighted_returns.dropna().sum(axis=1)
+        
+        return mean_weighted_returns_by_date.sort_index()
+    
+    
+    
     @staticmethod
-    def get_data_from_pickle(file_name: str):
+    def get_data_from_pickle(file_name : str):
         """
-        Load data from a pickle file located in the 'data' directory.
-
+        Load data from a pickle file.
+    
         Parameters:
-        - file_name (str): Name of the pickle file to load, without the extension.
-
+        - file_name (str): Name of the pickle file to load.
+    
         Returns:
         Any: The data loaded from the pickle file.
         """
-        # Construit le chemin du fichier en incluant le dossier 'data'
-        # Assurez-vous que le dossier 'data' est au même niveau que ce script,
-        # sinon ajustez le chemin d'accès selon votre structure de dossiers.
-        file_path = f"src/data/{file_name}.pkl"
-
+        file_path = os.path.join(os.path.dirname(__file__).replace("src\\utils", "data"), file_name + ".pkl")
         with open(file_path, 'rb') as f:
             data = pickle.load(f)
         return data
+    
+    @staticmethod
+    def save_data_to_pickle(data, file_name):
+        """
+        Save data to a pickle file.
+    
+        Parameters:
+        - data (Any): Data to save.
+        - file_name (str): Name of the pickle file to save.
+        """
+        file_path = os.path.join(os.path.dirname(__file__).replace("src\\utils", "data"), file_name + ".pkl")
+        with open(file_path, 'wb') as f:
+            pickle.dump(data, f)
+            
+            
+    @staticmethod
+    def load_trackers(names_list: list[str]):
+
+        trackers = {}
+        for name in names_list:
+            trackers.update({name : Utilities.get_data_from_pickle(name)})
+        return trackers
+
+if __name__ == "__main__":
+    date = datetime(2007, 11, 30)
+    x=Utilities.get_rebalancing_date(date, step=-6)
+

@@ -2,9 +2,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import pandas as pd
 from datetime import datetime
-from estimation_and_robustness import Estimation
+from strategies.estimation_and_robustness import Estimation
 from utils.utilities import Utilities
-import utils.config
+import utils.config as config
 import numpy as np
 
 from src.utils.utilities import Utilities
@@ -35,6 +35,12 @@ class Strategy(ABC):
         return deciles, next_date, volatilities
 
 
+    def _build_slope(self, market_data, low_decile, high_decile, date):
+        
+        previous_date = Utilities.get_rebalancing_date(date, step = config.STEP_SLOPE)
+        low_decile_returns = Utilities.get_ptf_returns(market_data, low_decile, previous_date, date)
+        high_decile_returns = Utilities.get_ptf_returns(market_data, high_decile, previous_date, date)
+        return high_decile_returns - low_decile_returns
 
     def generate_weights(self, decile, volatilities):
         
@@ -62,7 +68,7 @@ class LowVolatilityDecileStrategy(Strategy):
         # Sélectionner le décile avec la volatilité la plus faible
         low_volatility_decile = deciles[0]
         low_volatility_decile = Utilities.check_universe(low_volatility_decile, market_data, date, next_date)
-        low_volatility_decile = super().generate_weights(low_volatility_decile, volatilities)
+        low_volatility_decile = self.generate_weights(low_volatility_decile, volatilities)
         
         
         return low_volatility_decile, next_date
@@ -88,7 +94,7 @@ class HighVolatilityDecileStrategy(Strategy):
         # Sélectionner le décile avec la volatilité la plus élevée
         high_volatility_decile = deciles[-1]
         high_volatility_decile = Utilities.check_universe(high_volatility_decile, market_data, date, next_date)
-        high_volatility_decile = super().generate_weights(high_volatility_decile, volatilities)
+        high_volatility_decile = self.generate_weights(high_volatility_decile, volatilities)
         return high_volatility_decile, next_date
     
     
@@ -112,14 +118,14 @@ class MidVolatilityDecileStrategy(Strategy):
         # Sélectionner le décile avec la volatilité la plus élevée
         mid_volatility_decile = deciles[4]
         mid_volatility_decile = Utilities.check_universe(mid_volatility_decile, market_data, date, next_date)
-        mid_volatility_decile = super().generate_weights(mid_volatility_decile, volatilities)
+        mid_volatility_decile = self.generate_weights(mid_volatility_decile, volatilities)
         return mid_volatility_decile, next_date
 
 
 class VolatilityTimingStrategy(Strategy):  
     
     def __init__(self):
-        self.switch = {config.START_DATE : False} 
+        self.switch = {config.START_DATE : 'Low'} 
     
           
     def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime) -> dict[str, float]:
@@ -127,25 +133,49 @@ class VolatilityTimingStrategy(Strategy):
         low_decile, next_date = LowVolatilityDecileStrategy().generate_signals(market_data,compositions,date) 
         high_decile, next_date = HighVolatilityDecileStrategy().generate_signals(market_data,compositions,date)
         
-        slope = self.__build_slope(market_data, low_decile, high_decile, date)
+        slope = self._build_slope(market_data, low_decile, high_decile, date)
         
         if date!= config.END_DATE:
-            self.switch.update({next_date : Estimation.is_slope_significantly_positive(slope,alpha=config.SLOPE_ALPHA)})
+            if Estimation.is_slope_positive_or_negative(slope,alpha=config.SLOPE_ALPHA, pos_or_neg ='pos'):
+                self.switch.update({next_date : 'High'})
+            else:
+                self.switch.update({next_date : 'Low'})
         
         
-        if self.switch[date] == True :
+        if self.switch[date] == 'High' :
             return high_decile, next_date
         return low_decile, next_date 
         
         
-    @staticmethod
-    def __build_slope(market_data, low_decile, high_decile, date):
+class VolatilityTimingStrategy2sided(Strategy):  
+    
+    def __init__(self):
+        self.switch = {config.START_DATE : 'Mid'} 
+    
+          
+    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime) -> dict[str, float]:
+         
+        low_decile, next_date = LowVolatilityDecileStrategy().generate_signals(market_data,compositions,date) 
+        high_decile, next_date = HighVolatilityDecileStrategy().generate_signals(market_data,compositions,date)
+       
         
-        previous_date = Utilities.get_rebalancing_date(date, step = config.STEP_SLOPE)
-        low_decile_returns = Utilities.get_ptf_returns(market_data, low_decile, previous_date, date)
-        high_decile_returns = Utilities.get_ptf_returns(market_data, high_decile, previous_date, date)
-        return high_decile_returns - low_decile_returns
+        slope = self._build_slope(market_data, low_decile, high_decile, date)
         
+        if Estimation.is_slope_positive_or_negative(slope,alpha=config.SLOPE_ALPHA, pos_or_neg ='pos'):
+            self.switch.update({next_date : 'High'})
+        elif Estimation.is_slope_positive_or_negative(slope,alpha=config.SLOPE_ALPHA, pos_or_neg ='neg'):
+            self.switch.update({next_date : 'Low'})
+        else:
+            self.switch.update({next_date : 'Mid'})
+        
+        
+        if self.switch[date] == 'High' :
+            return high_decile, next_date
+        elif self.switch[date] == 'Low':
+            return low_decile, next_date    
+        
+        mid_decile, next_date = MidVolatilityDecileStrategy().generate_signals(market_data,compositions,date) 
+        return  mid_decile, next_date
         
         
 if __name__ == "__main__":
