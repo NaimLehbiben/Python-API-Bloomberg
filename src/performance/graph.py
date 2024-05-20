@@ -27,7 +27,7 @@ class Analysis:
              for label, group in nber_data.groupby('group') if group['USRINDEX Index'].iloc[0] == 1]
 
     
-        colormap = plt.cm.get_cmap('bone')
+        colormap = plt.get_cmap('bone')
         linestyle = ["solid", "dashdot", "solid", "dashed", "dashed"]
         
         for i, (name, tracker) in enumerate(trackers.items()):

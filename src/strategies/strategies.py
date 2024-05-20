@@ -2,12 +2,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import pandas as pd
 from datetime import datetime
-from strategies.estimation_and_robustness import Estimation
-from utils.utilities import Utilities
-import utils.config as config
+from src.strategies.estimation_and_robustness import Estimation
+from src.utils.utilities import Utilities
+import src.utils.config as config
 import numpy as np
 
-from src.utils.utilities import Utilities
 
 
 class Strategy(ABC):
@@ -177,15 +176,5 @@ class VolatilityTimingStrategy2sided(Strategy):
         mid_decile, next_date = MidVolatilityDecileStrategy().generate_signals(market_data,compositions,date) 
         return  mid_decile, next_date
         
-        
-if __name__ == "__main__":
-    
-    date = config.START_DATE
-    previous_date = Utilities.get_rebalancing_date(date, step = config.STEP_VOL)
-    compositions = Utilities.get_data_from_pickle("composition_par_date")
-    global_market_data = Utilities.get_data_from_pickle("global_market_data")
-    VolatilityTimingStrategy.generate_signals(global_market_data, compositions[date], date, previous_date)
-    
-    
     
     
