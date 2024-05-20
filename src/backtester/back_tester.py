@@ -1,10 +1,13 @@
-import pandas as pd
-from datetime import datetime
-from utils.utilities import Utilities
-from strategies.strategies import Strategy
-from base.quote import Quote
-from base.position import Position
-import os
+
+from tqdm import tqdm
+from src.utils.utilities import Utilities
+from src.strategies.strategies import Strategy
+from src.base.quote import Quote
+from src.base.position import Position
+import src.utils.config
+
+
+
 
 class AssetIndex:
     """
