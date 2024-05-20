@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import matplotlib.cm as cm
-import pandas as pd
 
 class Analysis:
     """

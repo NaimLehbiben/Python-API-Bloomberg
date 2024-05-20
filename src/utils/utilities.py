@@ -1,12 +1,10 @@
-
 from pandas_market_calendars import get_calendar
 import pandas as pd
 import numpy as np
 import pickle
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas_market_calendars as mcal
-import warnings
 
 class Utilities:
     """
@@ -37,9 +35,6 @@ class Utilities:
         rebalnce_dates.append(valid_dates[-1].date())
         
         return rebalnce_dates
-    
-
-
     
 
     @staticmethod
@@ -202,7 +197,4 @@ class Utilities:
             trackers.update({name : Utilities.get_data_from_pickle(name)})
         return trackers
 
-if __name__ == "__main__":
-    date = datetime(2007, 11, 30)
-    x=Utilities.get_rebalancing_date(date, step=-6)
 
