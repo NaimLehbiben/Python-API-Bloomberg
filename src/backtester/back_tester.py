@@ -1,13 +1,10 @@
-
-from tqdm import tqdm
+from datetime import datetime
+import pandas as pd
 from src.utils.utilities import Utilities
 from src.strategies.strategies import Strategy
 from src.base.quote import Quote
 from src.base.position import Position
-import src.utils.config
-
-
-
+import os
 
 class AssetIndex:
     """
@@ -58,8 +55,6 @@ class AssetIndex:
 
         
         self.last_price = self.price_history[-1]
-        
-        # computing and updating the current and historical positions
 
         self.update_current_and_historical_positions(date, universe)
   
@@ -148,7 +143,6 @@ class AssetIndex:
         last_track = self.get_last_track()
         
         weighted_returns = {}
-        # for each asset in the investement universe
         for ticker in new_weights.keys():
             
             date_index = market_data[ticker].index.get_loc(date)-1
@@ -156,17 +150,14 @@ class AssetIndex:
             if date==next_date:
                 next_date_index+=1
             asset_price_history = market_data[ticker].iloc[date_index:next_date_index]
-            # computing weigthed return of the asset
             weighted_returns[ticker]= asset_price_history.iloc[:,0].pct_change().dropna() * new_weights[ticker]
       
         
-        # computing the historical return of the index
         price_history_df = pd.DataFrame(weighted_returns)
         return_history_df["Rend"] = price_history_df.iloc[:, 1:].sum(axis=1)
         
         if not self.price_history:
            return_history_df.iloc[0,0]=0 
-        # computing the track record
         price_history_df = pd.DataFrame({"Price": (1 + return_history_df['Rend']).cumprod() * last_track})
         
         
@@ -194,11 +185,9 @@ class AssetIndex:
 
         
     def get_port_file(self, ptf_name):
-        
-        # Initialisation d'une liste pour stocker les données
+
         data = []
         
-        # Parcours du dictionnaire et ajout des données à la liste
         for date, positions in self.historical_position.items():
             for position in positions:
                 data.append({
@@ -238,21 +227,17 @@ class BackTesting:
           
           rebalancing_calendar = Utilities.create_rebalancing_calendar(start_date, end_date)
           
-          # Get investement universe
           if not use_pickle_universe:  
               print("a")                                                      
-              #compositions, global_market_data = DataManager.fetch_backtest_data(start_date, end_date, ticker, rebalancing_frequency, currency)
           else:
               compositions = Utilities.get_data_from_pickle("composition_par_date")
               global_market_data = Utilities.get_data_from_pickle("global_market_data")
-          
-          # Creating an instance of the AssetIndex class
+
           tracker = AssetIndex(start_date, currency, strategy)    
          
 
           
           end_date =rebalancing_calendar[-1]
-          # Rebalancing the portfolio
           for date in rebalancing_calendar:
               print(date)
               tracker.rebalance_portfolio(date, end_date, global_market_data, compositions[date])
