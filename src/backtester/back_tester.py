@@ -4,7 +4,11 @@ from src.utils.utilities import Utilities
 from src.strategies.strategies import Strategy
 from src.base.quote import Quote
 from src.base.position import Position
+# from src.data.data_manager import DataManager
 import os
+from tqdm import tqdm
+import utils.config as config 
+
 
 class AssetIndex:
     """
@@ -48,7 +52,7 @@ class AssetIndex:
         None
         """
         
-        universe, next_date = self.strategy.generate_signals(global_market_data,universe,date)
+        universe, next_date = self.strategy.generate_signals(global_market_data,universe, date, end_date)
         
         
         self.update_historical_prices(universe,global_market_data,date, next_date)
@@ -228,22 +232,21 @@ class BackTesting:
           rebalancing_calendar = Utilities.create_rebalancing_calendar(start_date, end_date)
           
           if not use_pickle_universe:  
-              print("a")                                                      
+              print("blapi not available on this pc")
+              # compositions, global_market_data = DataManager.fetch_backtest_data(start_date, end_date, ticker, currency)                                                     
           else:
               compositions = Utilities.get_data_from_pickle("composition_par_date")
               global_market_data = Utilities.get_data_from_pickle("global_market_data")
 
-          tracker = AssetIndex(start_date, currency, strategy)    
+          tracker = AssetIndex(rebalancing_calendar[0], currency, strategy)    
          
-
-          
-          end_date =rebalancing_calendar[-1]
+            
+          end_date = rebalancing_calendar[-1]
+          # Utiliser tqdm pour ajouter une barre de progression
           for date in rebalancing_calendar:
-              print(date)
-              tracker.rebalance_portfolio(date, end_date, global_market_data, compositions[date])
+            print(f"Processing date: {date}")
+            tracker.rebalance_portfolio(date, end_date, global_market_data, compositions[date])
               
-      
-             
           return tracker
           
 
