@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import utils.config as config
+from utils.utilities import Utilities
 
 class MetricsCalculator:
     def __init__(self, other_data):
@@ -91,3 +92,41 @@ class MetricsCalculator:
             'Sortino Ratio': self.calculate_sortino_ratio(asset_index),
             'Information Ratio': self.calculate_information_ratio(asset_index, benchmark_data)
         }
+    
+    def _calc_good_bad_mkt_stats(self, asset_indices):
+        
+        index_returns = self.other_data[config.TICKER].pct_change().dropna()
+        risk_free_rate = self.other_data[config.RISK_FREE_RATE_TICKER] / 100
+        rebalancing_dates = Utilities.create_rebalancing_calendar(config.START_DATE, config.END_DATE)
+        
+        # Calcul des rendements des déciles
+        deciles = ['LowVolatilityDecile', 'MidVolatilityDecile', 'HighVolatilityDecile']
+        returns = {decile: asset_indices[decile].quotes_to_dataframe().pct_change().dropna() for decile in deciles}
+        
+        good_mkt = {decile: [] for decile in deciles}
+        bad_mkt = {decile: [] for decile in deciles}
+        
+        for i in range(len(rebalancing_dates) - 1):
+            date = rebalancing_dates[i]
+            next_date = rebalancing_dates[i + 1]
+            is_market_good = index_returns.loc[date:next_date].mean().iloc[0] > risk_free_rate.loc[date:next_date].mean().iloc[0]
+            
+            for decile in deciles:
+                period_returns = returns[decile].loc[date:next_date]
+                mean_return = period_returns.mean().iloc[0] * 252
+                volatility = period_returns.std().iloc[0] * np.sqrt(252)
+                
+                if is_market_good:
+                    good_mkt[decile].append((mean_return, volatility))
+                else:
+                    bad_mkt[decile].append((mean_return, volatility))
+                    
+        avg_good_mkt = self.__calculate_averages(good_mkt, deciles)
+        avg_bad_mkt = self.__calculate_averages(bad_mkt, deciles)
+        
+        return avg_good_mkt, avg_bad_mkt
+        
+    def __calculate_averages(self, data, deciles):
+        return {decile: (pd.Series([x[0] for x in data[decile]]).mean()* 100 if data[decile] else 0,
+                         pd.Series([x[1] for x in data[decile]]).mean() * 100 if data[decile] else 0) for decile in deciles}
+ 
