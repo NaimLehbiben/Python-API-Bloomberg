@@ -1,4 +1,4 @@
-from data_loader import BLP
+from src.data.data_loader import BLP
 from datetime import datetime
 from utils.utilities import Utilities
 
@@ -63,7 +63,7 @@ class DataManager:
 
 
     @staticmethod
-    def fetch_other_US_data(start_date : datetime, end_date : datetime, ticker : str):
+    def fetch_other_US_data(start_date : datetime, end_date : datetime, ticker : str, curr):
                   
          tickers = ["USRINDEX Index","US0003M Index"]
          tickers.append(ticker)
