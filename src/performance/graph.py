@@ -7,7 +7,7 @@ import numpy as np
 
 class IndexPlotter:
     """
-    Class for computing the performance and risk of a asset index.
+    Class for computing the performance and risk of an asset index.
     """
 
     @staticmethod
@@ -16,39 +16,32 @@ class IndexPlotter:
         Plot the track record of the index.
 
         Parameters:
-        - index: The financial index for plotting.
+        - asset_indices: Dictionary of asset indices.
+        - nber_data: NBER recession data.
         """
-
-        # Création du graphique
         fig, ax = plt.subplots()
-        
         
         if nber_data is not None:
             nber_data['group'] = (nber_data['USRINDEX Index'] != nber_data['USRINDEX Index'].shift(1)).cumsum()
             [ax.axvspan(group.index[0], group.index[-1], color='dodgerblue', alpha=0.1) 
              for label, group in nber_data.groupby('group') if group['USRINDEX Index'].iloc[0] == 1]
 
-    
         colormap = plt.get_cmap('bone')
         linestyle = ["solid", "dashdot", "solid", "dashed", "dashed"]
         
         for i, (name, asset_index) in enumerate(asset_indices.items()):
             track_df = asset_index.quotes_to_dataframe()
             ax.plot(track_df.index, track_df.iloc[:, 0], label=name, color= colormap(i / len(asset_indices)), 
-                    linestyle=linestyle[i], linewidth = 0.75)
+                    linestyle=linestyle[i], linewidth=0.75)
         
-        if "VolatilityTiming" in asset_indices and 'VolatilityTiming2sided' not in  asset_indices:
-            
+        if "VolatilityTiming" in asset_indices and 'VolatilityTiming2sided' not in asset_indices:
             handles, labels, ax_holding = IndexPlotter._plot_holding_moments(asset_indices["VolatilityTiming"], ax)
-        elif not "VolatilityTiming" in asset_indices and 'VolatilityTiming2sided' in  asset_indices:
-
+        elif "VolatilityTiming2sided" in asset_indices:
             handles, labels, ax_holding = IndexPlotter._plot_holding_moments(asset_indices["VolatilityTiming2sided"], ax, True)
         else:
             handles, labels = ax.get_legend_handles_labels()
             ax_holding = ax
 
-        
-        # Titre et étiquettes d'axe
         ax.set_title('Performance and wealth plots of the volatility timing strategy')
         ax.set_xlabel('Date')
         ax.set_ylabel('Track Record')
@@ -58,45 +51,50 @@ class IndexPlotter:
         handles.append(mpatches.Patch(color='dodgerblue', alpha=0.1))
         labels.append('NBER Recessions')
  
-        # Affichage de la légende
-        ax_holding.legend(handles=handles, labels=labels, loc='upper left', framealpha = 1)
+        ax_holding.legend(handles=handles, labels=labels, loc='upper left', framealpha=1)
 
-        # Affichage du graphique
         plt.show()
     
-    
     @staticmethod
-    def _plot_holding_moments(asset_index, ax, is_2sided = False):
+    def _plot_holding_moments(asset_index, ax, is_2sided=False):
+        """
+        Plot holding moments on the provided axis.
 
+        Parameters:
+        - asset_index: The asset index to plot holding moments for.
+        - ax: The axis to plot on.
+        - is_2sided: Whether to plot 2-sided holding moments.
+        """
         ax_holding = ax.twinx()
         holding_high_ptf_dates = [date for date, holding in asset_index.strategy.switch.items() if holding == 'High']
         
         for date in holding_high_ptf_dates:
             ax_holding.axvline(x=date, color='grey', linestyle='-', linewidth=0.2)
-            
         
         handles, labels = ax.get_legend_handles_labels()
         handles.append(plt.Line2D([], [], color='grey', linewidth=0.2))
-        labels.append('Holding High Portofolio')
+        labels.append('Holding High Portfolio')
         
- 
         if is_2sided:
-            
             holding_low_ptf_dates = [date for date, holding in asset_index.strategy.switch.items() if holding == 'Low']
-            
             for date in holding_low_ptf_dates:
                 ax_holding.axvline(x=date, color='lightseagreen', linestyle='-', linewidth=0.2)
-                
             handles.append(plt.Line2D([], [], color='lightseagreen', linewidth=0.2))
-            labels.append('Holding Low Portofolio')
+            labels.append('Holding Low Portfolio')
         
         ax_holding.yaxis.set_visible(False)
         return handles, labels, ax_holding
     
     @staticmethod
-    def plot_tracks_for_diff_rebalncing_freq(asset_indices, label_names, strat_name):
+    def plot_tracks_for_diff_rebalancing_freq(asset_indices, label_names, strat_name):
+        """
+        Plot the track records for different rebalancing frequencies.
 
-        # Création du graphique
+        Parameters:
+        - asset_indices: List of asset indices.
+        - label_names: List of labels for the plot.
+        - strat_name: Strategy name for the title.
+        """
         fig, ax = plt.subplots()
 
         colormap = plt.get_cmap('bone')
@@ -104,58 +102,68 @@ class IndexPlotter:
         
         for i, asset_index in enumerate(asset_indices):
             track_df = asset_index.quotes_to_dataframe()
-            ax.plot(track_df.index, track_df.iloc[:, 0], label=label_names[i], color= colormap(i / len(asset_indices)), 
-                    linestyle=linestyle[i], linewidth = 0.75)
+            ax.plot(track_df.index, track_df.iloc[:, 0], label=label_names[i], color=colormap(i / len(asset_indices)), 
+                    linestyle=linestyle[i], linewidth=0.75)
 
-        # Titre et étiquettes d'axe
-        ax.set_title(f'{strat_name} - Wealth plot under different rebalncing frequencies')
+        ax.set_title(f'{strat_name} - Wealth plot under different rebalancing frequencies')
         ax.set_xlabel('Date')
         ax.set_ylabel('Track Record')
         ax.yaxis.set_label_position('right')
         ax.yaxis.tick_right() 
         
-        # Affichage de la légende
-        ax.legend(loc='upper left', framealpha = 1)
+        ax.legend(loc='upper left', framealpha=1)
 
-        # Affichage du graphique
         plt.show()
 
-
     @staticmethod
-    def asset_indices_barplot(asset_indices, other_data):
+    def asset_indices_barplot(asset_indices, other_data, risk_free_rate_ticker):
+        """
+        Plot bar charts for asset indices.
 
-        metrics_calculator = MetricsCalculator(other_data)
+        Parameters:
+        - asset_indices: Dictionary of asset indices.
+        - other_data: Other relevant data.
+        - risk_free_rate_ticker: The ticker for the risk-free rate.
+        """
+        metrics_calculator = MetricsCalculator(other_data, risk_free_rate_ticker)
         strat_names = ["HighVolatilityDecile", "VolatilityTiming2sided", "MidVolatilityDecile","VolatilityTiming","LowVolatilityDecile"]
         annualized_returns = [metrics_calculator.calculate_return(asset_indices[name]) for name in strat_names]
         annualized_vol = [metrics_calculator.calculate_volatility(asset_index) for asset_index in asset_indices.values()]
         annualized_sharpe = [metrics_calculator.calculate_sharpe_ratio(asset_indices[name]) for name in strat_names]
 
-
         fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
-        # Premier graphique: Bar plot des volatilités
         ax[0].bar(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], annualized_vol, color='blue', width=0.8)
-        ax[0].set_ylabel('Volatilty')
+        ax[0].set_ylabel('Volatility')
 
-
-        # Deuxième graphique: Bar plot des returns + plot des ratios de Sharpe
-        ax2 = ax[1].twinx()  # Deuxième axe pour le ratio de Sharpe
+        ax2 = ax[1].twinx()
         ax[1].bar(['High','Vol \n2sided', 'Mid','Vol \nTiming','Low'], annualized_returns, color='green', width=0.8, align='center')
         ax[1].set_ylabel('Return')
 
-        ax2.plot(['High','Vol \n2sided', 'Mid','Vol \nTiming','Low'], annualized_sharpe, color='black', marker='o', linestyle='-', linewidth=2, markersize=8, label ='Sharpe')
+        ax2.plot(['High','Vol \n2sided', 'Mid','Vol \nTiming','Low'], annualized_sharpe, color='black', marker='o', linestyle='-', linewidth=2, markersize=8, label='Sharpe')
         ax2.set_ylabel('Sharpe')
         ax2.legend(loc='upper left')
 
         fig.tight_layout()
         plt.show()
-    
 
     @staticmethod
-    def asset_indices_plot_under_diff_conditions(asset_indices, other_data):
+    def asset_indices_plot_under_diff_conditions(asset_indices, other_data, risk_free_rate_ticker, start_date, end_date, frequency, rebalance_at, ticker):
+        """
+        Plot bar charts for asset indices under different market conditions.
 
-        metrics_calculator = MetricsCalculator(other_data)
-        avg_good_mkt, avg_bad_mkt = metrics_calculator._calc_good_bad_mkt_stats(asset_indices)
+        Parameters:
+        - asset_indices: Dictionary of asset indices.
+        - other_data: Other relevant data.
+        - risk_free_rate_ticker: The ticker for the risk-free rate.
+        - start_date: The start date for the analysis.
+        - end_date: The end date for the analysis.
+        - frequency: Rebalancing frequency.
+        - rebalance_at: Rebalancing moment.
+        - ticker: Ticker for the index.
+        """
+        metrics_calculator = MetricsCalculator(other_data, risk_free_rate_ticker)
+        avg_good_mkt, avg_bad_mkt = metrics_calculator._calc_good_bad_mkt_stats(asset_indices, start_date, end_date, frequency, rebalance_at, ticker)
 
         strat_names = ["LowVolatilityDecile","MidVolatilityDecile","HighVolatilityDecile"]
         good_mkt_volatility = [avg_good_mkt[name][1] for name in strat_names]
@@ -163,57 +171,52 @@ class IndexPlotter:
         good_mkt_returns = [avg_good_mkt[name][0] for name in strat_names]
         bad_mkt_returns = [avg_bad_mkt[name][0] for name in strat_names]
 
-
-        # Définir la largeur des barres
         width = 0.35
 
         fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
-        # Positions des barres
         x = range(len(strat_names))
 
-        # Premier graphique: Bar plot des volatilités selon les conditions de marché
         ax[0].bar(x, good_mkt_volatility, width, label='Good Market', color='blue', align='center')
         ax[0].bar([i + width for i in x], bad_mkt_volatility, width, label='Bad Market', color='red', align='center')
         ax[0].set_ylabel('Volatility')
         ax[0].set_xticks([i + width / 2 for i in x])
         ax[0].set_xticklabels(['Low','Mid','High'])
 
-
-        # Deuxième graphique: Bar plot des returns selon les conditions de marché
         ax[1].bar(x, good_mkt_returns, width, color='blue', align='center')
         ax[1].bar([i + width for i in x], bad_mkt_returns, width, color='red', align='center')
         ax[1].set_ylabel('Return')
         ax[1].set_xticks([i + width / 2 for i in x])
         ax[1].set_xticklabels(['Low','Mid','High'])
 
-        # Ajouter une légende globale pour la figure entière
         fig.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=2)
 
         fig.tight_layout()
         plt.show()
-    
-    @staticmethod
-    def display_asset_indices_metrics(asset_indices, other_data):
-        
-        # Calcul des métriques de performance
-        metrics_calculator = MetricsCalculator(other_data)
 
-        # Charger les données des portefeuilles
+    @staticmethod
+    def display_asset_indices_metrics(asset_indices, other_data, risk_free_rate_ticker):
+        """
+        Display performance metrics for asset indices.
+
+        Parameters:
+        - asset_indices: Dictionary of asset indices.
+        - other_data: Other relevant data.
+        """
+        metrics_calculator = MetricsCalculator(other_data, risk_free_rate_ticker)
+
         low_vol_data = asset_indices['LowVolatilityDecile']
         mid_vol_data = asset_indices['MidVolatilityDecile']
         high_vol_data = asset_indices['HighVolatilityDecile']
         vol_timing_data = asset_indices['VolatilityTiming']
         vol_timing_2sided_data = asset_indices['VolatilityTiming2sided']
 
-        # Calculer les métriques pour chaque portefeuille
         low_vol_metrics = metrics_calculator.calculate_all_metrics(low_vol_data, low_vol_data)
         mid_vol_metrics = metrics_calculator.calculate_all_metrics(mid_vol_data, low_vol_data)
         high_vol_metrics = metrics_calculator.calculate_all_metrics(high_vol_data, low_vol_data)
         vol_timing_metrics = metrics_calculator.calculate_all_metrics(vol_timing_data, low_vol_data)
         vol_timing_2sided_metrics = metrics_calculator.calculate_all_metrics(vol_timing_2sided_data, low_vol_data)
 
-        # Compilation des métriques dans un DataFrame
         metrics_df = pd.DataFrame({
             'Low Volatility': low_vol_metrics,
             'Mid Volatility': mid_vol_metrics,
@@ -222,10 +225,8 @@ class IndexPlotter:
             'Volatility Timing 2-sided': vol_timing_2sided_metrics
         })
 
-
         metrics_df = metrics_df.applymap(lambda x: x.item() if isinstance(x, pd.Series) else x)
         metrics_df.update(metrics_df.loc[['Return', 'Volatility', 'Max Drawdown', 'SQRT (Semi-variance)']].applymap(lambda x: f"{x:.2f}%" if pd.notnull(x) else "NaN"))
-
 
         metrics_df.replace([-np.inf, np.inf], 'Benchmark', inplace=True)
 
@@ -233,12 +234,16 @@ class IndexPlotter:
 
     @staticmethod
     def display_regress_statistics(asset_indices):
+        """
+        Display regression statistics for asset indices.
 
+        Parameters:
+        - asset_indices: Dictionary of asset indices.
+        """
         stats = Estimation.Cpam_FF_regress_statics(asset_indices)
 
         rows_CPAM = []
         rows_FF = []
-        ["LowVolatilityDecile", "MidVolatilityDecile", "HighVolatilityDecile", "VolatilityTiming", "VolatilityTiming2sided"]
         strat_short_names = {'LowVolatilityDecile' : 'LowVol',
                              'MidVolatilityDecile' : 'MidVol',
                              'HighVolatilityDecile' : 'HighVol',
@@ -246,9 +251,8 @@ class IndexPlotter:
                              'VolatilityTiming2sided' : 'Vol2Sided'}
         
         columns_names_CPAM = ['α (%)', 'β_mkt', 'R²']
-        columns_names_FF = ['α (%)', 'β_mkt',  'β_SMB', 'β_HML', 'R²']
+        columns_names_FF = ['α (%)', 'β_mkt', 'β_SMB', 'β_HML', 'R²']
         index_names = [item for strat_name in asset_indices.keys() for item in (strat_short_names[strat_name], '')]
-
 
         for _, models in stats.items():
             for model_name, metrics in models.items():
@@ -258,28 +262,15 @@ class IndexPlotter:
                 is_significant = metrics['is_significant']
                 
                 if model_name == 'CPAM':
-                    rows_CPAM.append([ f"{coefficients['const']*100:.3}{is_significant[0]}", 
-                         f"{coefficients['Mkt']:.3f}{is_significant[1]}",f"{rsquared:.3f}"])
-                    rows_CPAM.append([f"({tvalues['const']:.3f})",f"({tvalues['Mkt']:.3f})",""])
+                    rows_CPAM.append([f"{coefficients['const']*100:.3}{is_significant[0]}", 
+                                      f"{coefficients['Mkt']:.3f}{is_significant[1]}", f"{rsquared:.3f}"])
+                    rows_CPAM.append([f"({tvalues['const']:.3f})", f"({tvalues['Mkt']:.3f})", ""])
                 else:
                     rows_FF.append([f"{coefficients['const']*100:.3}{is_significant[0]}",  
-                        f"{coefficients['Mkt']:.3f}{is_significant[1]}",  
-                        f"{coefficients['SMB']:.3f}{is_significant[2]}", 
-                        f"{coefficients['HML']:.3f}{is_significant[3]}", f"{rsquared:.3f}"])
-                    rows_FF.append([f"({tvalues['const']:.3f})",f"({tvalues['Mkt']:.3f})",
+                                    f"{coefficients['Mkt']:.3f}{is_significant[1]}",  
+                                    f"{coefficients['SMB']:.3f}{is_significant[2]}", 
+                                    f"{coefficients['HML']:.3f}{is_significant[3]}", f"{rsquared:.3f}"])
+                    rows_FF.append([f"({tvalues['const']:.3f})", f"({tvalues['Mkt']:.3f})",
                                     f"({tvalues['SMB']:.3f})", f"({tvalues['HML']:.3f})", ""])
         
-        return pd.DataFrame(rows_CPAM, columns=columns_names_CPAM, index= index_names), pd.DataFrame(rows_FF, columns=columns_names_FF, index=index_names)
-    
-
-
-
-
-
-
-    
-
-            
-        
-
-        
+        return pd.DataFrame(rows_CPAM, columns=columns_names_CPAM, index=index_names), pd.DataFrame(rows_FF, columns=columns_names_FF, index=index_names)
