@@ -67,7 +67,7 @@ class FinanceApp(tk.Tk):
         # Weights Type
         self.weights_label = tk.Label(self, text="Weights Type")
         self.weights_label.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
-        self.weights_combobox = ttk.Combobox(self, values=["Equally Weighted", "Max Diversification"])
+        self.weights_combobox = ttk.Combobox(self, values=["Equally Weighted", "Max Diversification" ,"Vol Scaling"])
         self.weights_combobox.grid(row=6, column=1, padx=10, pady=10)
         self.weights_combobox.set("Equally Weighted")
 

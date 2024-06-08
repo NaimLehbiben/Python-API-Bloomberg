@@ -9,3 +9,4 @@ statsmodels
 matplotlib
 tkcalendar
 tkinter
+scikit-learn

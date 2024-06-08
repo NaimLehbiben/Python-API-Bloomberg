@@ -5,6 +5,10 @@ import pandas as pd
 import statsmodels.api as sm
 from statsmodels.stats.sandwich_covariance import cov_hac
 import numpy as np
+from src.utils.utilities import Utilities
+import src.utils.constant as constant
+from sklearn.covariance import ShrunkCovariance
+from scipy.optimize import minimize
 
 class Estimation:
     
@@ -70,5 +74,33 @@ class Estimation:
         ]
 
         return model.params, nw_tvalues, model.rsquared, significance_indic
+
+    @staticmethod
+    def __calc_cov_matrix(decile, market_data, date):
+
+        previous_date = Utilities.get_rebalancing_date(date, sign = -1, step = constant.STEP_VOL)
+        returns_df  = pd.concat([market_data[ticker].loc[previous_date:date] 
+                                 for ticker in decile 
+                                 if ticker in market_data], axis=1).pct_change().dropna()
+        cov_matrix = ShrunkCovariance().fit(returns_df).covariance_
+        return cov_matrix
+    
+    @staticmethod
+    def __calc_diversification_ratio(weights, cov_matrix):
+
+        weighted_vol = np.sqrt(np.diag(cov_matrix) @ weights.T)
+        ptf_vol = np.sqrt(weights.T @ cov_matrix @ weights)
+        diversification_ratio = weighted_vol / ptf_vol
+
+        return -diversification_ratio
+
+    @staticmethod
+    def optimize_diversification_ratio(decile, market_data, date, weights):
+
+        cov = Estimation.__calc_cov_matrix(decile, market_data, date)
+        optimal_weights = minimize(Estimation.__calc_diversification_ratio, x0=np.array(list(weights.values())), args=cov,
+                                        method='SLSQP', bounds = tuple((0.01, 1) for w in weights.values()), 
+                                        constraints=({'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}))
+        return {ticker : weight for ticker, weight in zip(decile, optimal_weights['x'])}
 
 

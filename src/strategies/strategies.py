@@ -36,9 +36,9 @@ class Strategy(ABC):
     def generate_weights(self, decile, volatilities, weights_type):
         if weights_type.lower() == "equally weighted":
             return {ticker: 1/len(decile) for ticker in decile}
-        elif weights_type.lower() == "max diversification":
-            # Placeholder for max diversification strategy
-            return {ticker: volatilities[ticker] for ticker in decile}
+        elif weights_type.lower() == "vol scaling":
+            sum_inv_vol = np.sum([1 / volatilities[ticker] for ticker in decile])
+            return {ticker: 1/ volatilities[ticker] / sum_inv_vol for ticker in decile}
         else:
             raise ValueError("Unknown weights type")
 

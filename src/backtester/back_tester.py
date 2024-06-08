@@ -6,6 +6,7 @@ from src.base.quote import Quote
 from src.base.position import Position
 import os
 from tqdm import tqdm
+from src.utils import constant
 
 class AssetIndex:
     def __init__(self, launch_date: datetime, currency: str, strategy: Strategy):
@@ -67,6 +68,10 @@ class AssetIndex:
             weighted_returns[ticker] = asset_price_history.iloc[:, 0].pct_change().dropna() * new_weights[ticker]
         price_history_df = pd.DataFrame(weighted_returns)
         return_history_df["Rend"] = price_history_df.iloc[:, 1:].sum(axis=1)
+
+        # On soustrait les cout de transactions lié au rebalencement
+        return_history_df["Rend"].iloc[0] -= constant.TRANSACTION_COST / 10000
+        
         if not self.price_history:
             return_history_df.iloc[0, 0] = 0
         price_history_df = pd.DataFrame({"Price": (1 + return_history_df['Rend']).cumprod() * last_track})
@@ -105,17 +110,13 @@ class BackTesting:
         risk_free_rate_ticker = params.get("risk_free_rate_ticker", None)
         weights_type = params.get("weights_type", None)
 
-        print(f"BackTesting parameters: start_date={start_date}, end_date={end_date}, currency={currency}, "
-              f"ticker={ticker}, use_pickle_universe={use_pickle_universe}, strategy={strategy}, "
-              f"rebalancing_frequency={rebalancing_frequency}, rebalancing_moment={rebalancing_moment}, "
-              f"risk_free_rate_ticker={risk_free_rate_ticker}, weights_type={weights_type}")
-
         rebalancing_calendar = Utilities.create_rebalancing_calendar(start_date, end_date, rebalancing_frequency, rebalancing_moment)
         if not use_pickle_universe:
             print("blapi not available on this pc")
         else:
             compositions = Utilities.get_data_from_pickle("composition_par_date")
             global_market_data = Utilities.get_data_from_pickle("global_market_data")
+            
         tracker = AssetIndex(rebalancing_calendar[0], currency, strategy)
         end_date = rebalancing_calendar[-1]
         for date in tqdm(rebalancing_calendar):
