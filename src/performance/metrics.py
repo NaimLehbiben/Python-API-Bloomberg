@@ -1,20 +1,29 @@
 import numpy as np
 import pandas as pd
-import utils.config as config
 from utils.utilities import Utilities
 
 class MetricsCalculator:
-    def __init__(self, other_data):
+    def __init__(self, other_data, risk_free_rate_ticker):
+        """
+        Initialize the MetricsCalculator with the given risk-free rate ticker and other data.
+        """
+        self.risk_free_rate_ticker = risk_free_rate_ticker
         self.risk_free_rate = self._get_risk_free_rate(other_data)
         self.other_data = other_data
-
+        
     def _get_risk_free_rate(self, other_data):
-        if config.RISK_FREE_RATE_TICKER in other_data:
-            return other_data[config.RISK_FREE_RATE_TICKER].mean() / 252  # Assuming daily rate
+        """
+        Get the risk-free rate from the other data provided.
+        """
+        if self.risk_free_rate_ticker in other_data:
+            return other_data[self.risk_free_rate_ticker].mean() / 252  # Assuming daily rate
         else:
-            raise KeyError(f"La colonne '{config.RISK_FREE_RATE_TICKER}' n'est pas présente dans other_data")
+            raise KeyError(f"The column '{self.risk_free_rate_ticker}' is not present in other_data")
 
     def calculate_return(self, asset_index):
+        """
+        Calculate the annualized return of the asset index.
+        """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
         if returns.empty:
@@ -24,6 +33,9 @@ class MetricsCalculator:
         return annualized_return * 100  
 
     def calculate_volatility(self, asset_index):
+        """
+        Calculate the annualized volatility of the asset index.
+        """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
         if returns.empty:
@@ -33,6 +45,9 @@ class MetricsCalculator:
         return annualized_volatility * 100  
 
     def calculate_sharpe_ratio(self, asset_index):
+        """
+        Calculate the Sharpe ratio of the asset index.
+        """
         mean_return = self.calculate_return(asset_index)
         volatility = self.calculate_volatility(asset_index)
         if volatility == 0:
@@ -41,6 +56,9 @@ class MetricsCalculator:
         return sharpe_ratio
 
     def calculate_max_drawdown(self, asset_index):
+        """
+        Calculate the maximum drawdown of the asset index.
+        """
         prices = [quote.price for quote in asset_index.price_history]
         cumulative_returns = (1 + pd.Series(prices).pct_change().dropna()).cumprod()
         if cumulative_returns.empty:
@@ -51,6 +69,9 @@ class MetricsCalculator:
         return max_drawdown * 100  
     
     def calculate_semi_variance(self, asset_index):
+        """
+        Calculate the semi-variance of the asset index.
+        """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
         if returns.empty:
@@ -62,17 +83,22 @@ class MetricsCalculator:
         return semi_variance * 100  
 
     def calculate_sortino_ratio(self, asset_index):
+        """
+        Calculate the Sortino ratio of the asset index.
+        """
         mean_return = self.calculate_return(asset_index)
         semi_variance = self.calculate_semi_variance(asset_index)
         sortino_ratio = (mean_return - self.risk_free_rate * 100) / semi_variance
         return sortino_ratio
 
     def calculate_information_ratio(self, asset_index, benchmark_data):
+        """
+        Calculate the Information ratio of the asset index.
+        """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
         if returns.empty:
             return np.nan
-        # Utiliser les rendements de Low Volatility comme benchmark
         benchmark_prices = [quote.price for quote in benchmark_data.price_history]
         benchmark_returns = pd.Series(benchmark_prices).pct_change().dropna()
         if benchmark_returns.empty:
@@ -83,6 +109,9 @@ class MetricsCalculator:
         return information_ratio
 
     def calculate_all_metrics(self, asset_index, benchmark_data):
+        """
+        Calculate all relevant metrics for the asset index.
+        """
         return {
             'Return': self.calculate_return(asset_index),
             'Volatility': self.calculate_volatility(asset_index),
@@ -93,13 +122,14 @@ class MetricsCalculator:
             'Information Ratio': self.calculate_information_ratio(asset_index, benchmark_data)
         }
     
-    def _calc_good_bad_mkt_stats(self, asset_indices):
+    def _calc_good_bad_mkt_stats(self, asset_indices, start_date, end_date, frequency, rebalance_at, ticker):
+        """
+        Calculate statistics for good and bad market conditions.
+        """
+        index_returns = self.other_data[ticker].pct_change().dropna()
+        risk_free_rate = self.other_data[self.risk_free_rate_ticker] / 100
+        rebalancing_dates = Utilities.create_rebalancing_calendar(start_date, end_date, frequency, rebalance_at)
         
-        index_returns = self.other_data[config.TICKER].pct_change().dropna()
-        risk_free_rate = self.other_data[config.RISK_FREE_RATE_TICKER] / 100
-        rebalancing_dates = Utilities.create_rebalancing_calendar(config.START_DATE, config.END_DATE)
-        
-        # Calcul des rendements des déciles
         deciles = ['LowVolatilityDecile', 'MidVolatilityDecile', 'HighVolatilityDecile']
         returns = {decile: asset_indices[decile].quotes_to_dataframe().pct_change().dropna() for decile in deciles}
         
@@ -127,6 +157,8 @@ class MetricsCalculator:
         return avg_good_mkt, avg_bad_mkt
         
     def __calculate_averages(self, data, deciles):
+        """
+        Calculate averages for good and bad market conditions.
+        """
         return {decile: (pd.Series([x[0] for x in data[decile]]).mean()* 100 if data[decile] else 0,
                          pd.Series([x[1] for x in data[decile]]).mean() * 100 if data[decile] else 0) for decile in deciles}
- 
