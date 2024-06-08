@@ -6,11 +6,11 @@ from utils.utilities import Utilities
 class DataManager:
     
     @staticmethod
-    def get_historical_compositions(start_date : datetime, end_date : datetime, ticker : str):
+    def get_historical_compositions(start_date : datetime, end_date : datetime, ticker : str, frequency, rebalance_at):
         strFields = ["INDX_MWEIGHT_HIST"]  
         blp = BLP()
         
-        rebalancing_dates = Utilities.create_rebalancing_calendar(start_date, end_date)
+        rebalancing_dates = Utilities.create_rebalancing_calendar(start_date, end_date, frequency, rebalance_at)
         composition_par_date = {}
 
 
@@ -46,13 +46,13 @@ class DataManager:
         return global_market_data,tickers_a_supp
     
     @staticmethod
-    def fetch_backtest_data(start_date : datetime, end_date : datetime, ticker : str, curr : str):
+    def fetch_backtest_data(start_date : datetime, end_date : datetime, ticker : str, curr : str, frequency, rebalance_at, sign):
         
     
-        composition_par_date = DataManager.get_historical_compositions(start_date, end_date, ticker)
+        composition_par_date = DataManager.get_historical_compositions(start_date, end_date, ticker, frequency, rebalance_at)
     
         tickers_uniques = list({ticker for composition in composition_par_date.values() for ticker in composition})
-        start_date = Utilities.get_rebalancing_date(start_date, step=-6)   
+        start_date = Utilities.get_rebalancing_date(start_date, sign, frequency, rebalance_at, step=-6)   
        
         global_market_data, tickers_a_supp = DataManager.get_historical_prices(start_date, end_date, tickers_uniques, curr)
         

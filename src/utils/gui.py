@@ -59,17 +59,24 @@ class FinanceApp(tk.Tk):
 
         # Risk-Free Rate Ticker
         self.risk_free_label = tk.Label(self, text="Risk-Free Rate Ticker (e.g., US0003M Index)")
-        self.risk_free_label.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
+        self.risk_free_label.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
         self.risk_free_entry = tk.Entry(self)
-        self.risk_free_entry.grid(row=5, column=1, padx=10, pady=10)
+        self.risk_free_entry.grid(row=4, column=1, padx=10, pady=10)
         self.risk_free_entry.insert(0, "US0003M Index")
 
         # Weights Type
         self.weights_label = tk.Label(self, text="Weights Type")
-        self.weights_label.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
-        self.weights_combobox = ttk.Combobox(self, values=["Equally Weighted", "Max Diversification" ,"Vol Scaling"])
-        self.weights_combobox.grid(row=6, column=1, padx=10, pady=10)
+        self.weights_label.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
+        self.weights_combobox = ttk.Combobox(self, values=["Equally Weighted", "Max Diversification", "Vol Scaling"])
+        self.weights_combobox.grid(row=5, column=1, padx=10, pady=10)
         self.weights_combobox.set("Equally Weighted")
+
+        # Bloomberg Access
+        self.bloomberg_label = tk.Label(self, text="Do you have Bloomberg Access?")
+        self.bloomberg_label.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
+        self.bloomberg_var = tk.BooleanVar()
+        self.bloomberg_checkbutton = tk.Checkbutton(self, text="Yes", variable=self.bloomberg_var)
+        self.bloomberg_checkbutton.grid(row=6, column=1, padx=10, pady=10)
 
         # Run Button
         self.run_button = tk.Button(self, text="Run Backtest", command=self.run_backtest)
@@ -82,6 +89,10 @@ class FinanceApp(tk.Tk):
         frequency = self.frequency_combobox.get()
         risk_free_rate_ticker = self.risk_free_entry.get()
         weights_type = self.weights_combobox.get()
+        has_bloomberg = self.bloomberg_var.get()
+
+        # Définir USE_PICKLE_UNIVERSE en fonction de l'accès à Bloomberg
+        use_pickle_universe = not has_bloomberg
 
         # Parameters for backtest
         params = {
@@ -90,7 +101,7 @@ class FinanceApp(tk.Tk):
             "end_date": end_date,
             "ticker": ticker,
             "strategy": VolatilityTimingStrategy(start_date, frequency, constant.REBALANCING_MOMENT, weights_type),
-            "use_pickle_universe": constant.USE_PICKLE_UNIVERSE,
+            "use_pickle_universe": use_pickle_universe,
             "rebalancing_frequency": frequency,
             "rebalancing_moment": constant.REBALANCING_MOMENT,
             "risk_free_rate_ticker": risk_free_rate_ticker,
@@ -120,3 +131,4 @@ class FinanceApp(tk.Tk):
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
+
