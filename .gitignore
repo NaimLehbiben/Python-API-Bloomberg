@@ -148,11 +148,10 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-#Ignore Data which are to heavy
-
-data/universe
-
 #Ignore Ds_Store
 
 .DS_Store
 
+data/universe/composition.pkl
+data/universe/global_market_data.pkl
+data/universe/other_US_data.pkl
