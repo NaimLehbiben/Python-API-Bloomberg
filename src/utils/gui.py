@@ -6,13 +6,20 @@ from datetime import datetime
 import sys
 import os
 import warnings
+import pandas as pd
 
 # Add the parent directory to include 'src'
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 
 # Imports after adjusting the sys.path
 from src.backtester.back_tester import BackTesting
-from src.strategies.strategies import VolatilityTimingStrategy
+from src.strategies.strategies import (
+    VolatilityTimingStrategy,
+    VolatilityTimingStrategy2sided,
+    LowVolatilityDecileStrategy,
+    MidVolatilityDecileStrategy,
+    HighVolatilityDecileStrategy
+)
 from src.utils.utilities import Utilities
 from src.performance.graph import IndexPlotter
 
@@ -71,16 +78,29 @@ class FinanceApp(tk.Tk):
         self.weights_combobox.grid(row=5, column=1, padx=10, pady=10)
         self.weights_combobox.set("Equally Weighted")
 
+        # Strategy Selection
+        self.strategy_label = tk.Label(self, text="Strategy")
+        self.strategy_label.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
+        self.strategy_combobox = ttk.Combobox(self, values=[
+            "LowVolatilityDecile",
+            "MidVolatilityDecile",
+            "HighVolatilityDecile",
+            "VolatilityTiming",
+            "VolatilityTiming2sided"
+        ])
+        self.strategy_combobox.grid(row=6, column=1, padx=10, pady=10)
+        self.strategy_combobox.set("VolatilityTiming")
+
         # Bloomberg Access
         self.bloomberg_label = tk.Label(self, text="Do you have Bloomberg Access?")
-        self.bloomberg_label.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
+        self.bloomberg_label.grid(row=7, column=0, padx=10, pady=10, sticky=tk.W)
         self.bloomberg_var = tk.BooleanVar()
         self.bloomberg_checkbutton = tk.Checkbutton(self, text="Yes", variable=self.bloomberg_var)
-        self.bloomberg_checkbutton.grid(row=6, column=1, padx=10, pady=10)
+        self.bloomberg_checkbutton.grid(row=7, column=1, padx=10, pady=10)
 
         # Run Button
         self.run_button = tk.Button(self, text="Run Backtest", command=self.run_backtest)
-        self.run_button.grid(row=7, column=0, columnspan=2, pady=20)
+        self.run_button.grid(row=8, column=0, columnspan=2, pady=20)
 
     def run_backtest(self):
         ticker = self.ticker_entry.get()
@@ -89,10 +109,26 @@ class FinanceApp(tk.Tk):
         frequency = self.frequency_combobox.get()
         risk_free_rate_ticker = self.risk_free_entry.get()
         weights_type = self.weights_combobox.get()
+        strategy_name = self.strategy_combobox.get()
         has_bloomberg = self.bloomberg_var.get()
 
         # Définir USE_PICKLE_UNIVERSE en fonction de l'accès à Bloomberg
         use_pickle_universe = not has_bloomberg
+
+        # Choisir la stratégie en fonction de la sélection de l'utilisateur
+        if strategy_name == "VolatilityTiming":
+            strategy = VolatilityTimingStrategy(start_date, frequency, constant.REBALANCING_MOMENT, weights_type)
+        elif strategy_name == "VolatilityTiming2sided":
+            strategy = VolatilityTimingStrategy2sided(start_date, frequency, constant.REBALANCING_MOMENT, weights_type)
+        elif strategy_name == "LowVolatilityDecile":
+            strategy = LowVolatilityDecileStrategy()
+        elif strategy_name == "MidVolatilityDecile":
+            strategy = MidVolatilityDecileStrategy()
+        elif strategy_name == "HighVolatilityDecile":
+            strategy = HighVolatilityDecileStrategy()
+        else:
+            messagebox.showerror("Error", "Invalid Strategy Selected")
+            return
 
         # Parameters for backtest
         params = {
@@ -100,7 +136,7 @@ class FinanceApp(tk.Tk):
             "start_date": start_date,
             "end_date": end_date,
             "ticker": ticker,
-            "strategy": VolatilityTimingStrategy(start_date, frequency, constant.REBALANCING_MOMENT, weights_type),
+            "strategy": strategy,
             "use_pickle_universe": use_pickle_universe,
             "rebalancing_frequency": frequency,
             "rebalancing_moment": constant.REBALANCING_MOMENT,
@@ -112,19 +148,9 @@ class FinanceApp(tk.Tk):
             # Run the backtest
             asset_index = BackTesting.start(params)
 
-            # Save results
-            Utilities.save_data_to_pickle(asset_index, file_name="VolatilityTiming", folder_subpath="asset_indices\\monthly_eq_weighted")
-
             # Generate performance graphs
-            asset_indices_monthly = Utilities.load_asset_indices(["LowVolatilityDecile", "MidVolatilityDecile", "HighVolatilityDecile"], 
-                                                                 folder_subpath="asset_indices\\monthly_eq_weighted")
             other_data = Utilities.get_data_from_pickle('other_US_data')
-           
-            # Plot track records of strategies
-            asset_indices_monthly = Utilities.load_asset_indices(["LowVolatilityDecile", "MidVolatilityDecile", "HighVolatilityDecile", 
-                                                                  "VolatilityTiming", "VolatilityTiming2sided"],
-                                                                 folder_subpath="asset_indices\\monthly_eq_weighted")
-            IndexPlotter.plot_track_records(asset_indices_monthly, other_data['USRINDEX Index'])
+            IndexPlotter.plot_track_records({strategy_name: asset_index}, other_data['USRINDEX Index'])
 
             results = "Backtest completed successfully!"
             messagebox.showinfo("Backtest Results", results)

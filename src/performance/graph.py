@@ -66,7 +66,7 @@ class IndexPlotter:
         - is_2sided: Whether to plot 2-sided holding moments.
         """
         ax_holding = ax.twinx()
-        holding_high_ptf_dates = [date for date, holding in asset_index.strategy.switch.items() if holding == 'High']
+        holding_high_ptf_dates = [date for date, holding in asset_index.strategy.ptf_hold.items() if holding == 'High']
         
         for date in holding_high_ptf_dates:
             ax_holding.axvline(x=date, color='grey', linestyle='-', linewidth=0.2)
@@ -76,7 +76,7 @@ class IndexPlotter:
         labels.append('Holding High Portfolio')
         
         if is_2sided:
-            holding_low_ptf_dates = [date for date, holding in asset_index.strategy.switch.items() if holding == 'Low']
+            holding_low_ptf_dates = [date for date, holding in asset_index.strategy.ptf_hold.items() if holding == 'Low']
             for date in holding_low_ptf_dates:
                 ax_holding.axvline(x=date, color='lightseagreen', linestyle='-', linewidth=0.2)
             handles.append(plt.Line2D([], [], color='lightseagreen', linewidth=0.2))
