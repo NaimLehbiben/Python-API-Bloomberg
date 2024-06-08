@@ -90,12 +90,12 @@ class AssetIndex:
         for date, positions in self.historical_position.items():
             for position in positions:
                 data.append({
-                    "Portfolio Name": ptf_name,
+                    "Portfolio Name": ptf_name.upper(),
                     "Ticker": position.ticker,
                     "Weight": position.weight,
                     "Date": date
                 })
-        pd.DataFrame(data).to_csv(os.path.dirname(__file__).replace("src\\backtester", "data") + "\\port.csv", sep=';', index=False, decimal=',')
+        pd.DataFrame(data).to_csv(os.path.dirname(__file__).replace("src\\backtester", "data") + "\\port.csv", sep=';', index=False, decimal='.')
 
 class BackTesting:
     @staticmethod
@@ -116,10 +116,10 @@ class BackTesting:
         if not use_pickle_universe:
             print("blapi not available on this pc")
             compositions, global_market_data = DataManager.fetch_backtest_data(start_date, end_date, ticker,currency,rebalancing_frequency, rebalancing_moment, sign)
-            Utilities.save_data_to_pickle(compositions, file_name="composition")
-            Utilities.save_data_to_pickle(compositions, file_name="global_market_data")
+            Utilities.save_data_to_pickle(compositions, file_name="composition", folder_subpath="universe")
+            Utilities.save_data_to_pickle(compositions, file_name="global_market_data",folder_subpath="universe")
             other_US_data = DataManager.fetch_other_US_data(start_date, end_date, ticker,currency)
-            Utilities.save_data_to_pickle(other_US_data, file_name="other_US_data")
+            Utilities.save_data_to_pickle(other_US_data, file_name="other_US_data",folder_subpath="universe")
         else:
             compositions = Utilities.get_data_from_pickle("composition_par_date")
             global_market_data = Utilities.get_data_from_pickle("global_market_data")
