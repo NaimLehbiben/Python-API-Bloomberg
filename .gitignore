@@ -150,7 +150,7 @@ cython_debug/
 
 #Ignore Data which are to heavy
 
-data/
+data/universe
 
 #Ignore Ds_Store
 

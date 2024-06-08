@@ -149,12 +149,16 @@ class FinanceApp(tk.Tk):
             asset_index = BackTesting.start(params)
 
             # Generate performance graphs
-            other_data = Utilities.get_data_from_pickle('other_US_data')
+            other_data = Utilities.get_data_from_pickle('other_US_data', folder_subpath="universe")
             IndexPlotter.plot_track_records({strategy_name: asset_index}, other_data['USRINDEX Index'])
+
+            asset_index.get_port_file(strategy_name)
 
             results = "Backtest completed successfully!"
             messagebox.showinfo("Backtest Results", results)
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
+        finally:
+            self.destroy()  # Fermer la fenêtre après avoir lancé le code
 
