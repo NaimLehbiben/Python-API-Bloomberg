@@ -7,3 +7,6 @@ tqdm
 scipy
 statsmodels
 matplotlib
+tkcalendar
+tkinter
+scikit-learn
