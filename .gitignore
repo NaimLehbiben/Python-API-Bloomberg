@@ -150,7 +150,9 @@ cython_debug/
 
 #Ignore Data which are to heavy
 
-data/universe
+
+# Ignorer tous les fichiers dans le répertoire data/universe
+data/universe/*
 
 #Ignore Ds_Store
 
