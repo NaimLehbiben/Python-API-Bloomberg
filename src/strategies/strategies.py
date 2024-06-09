@@ -45,27 +45,42 @@ class Strategy(ABC):
             raise ValueError("Unknown weights type")
 
 class LowVolatilityDecileStrategy(Strategy):
-    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime, end_date, frequency, rebalance_at, weights_type) -> dict[str, float]:
-        deciles, next_date, volatilities = super().generate_signals(market_data, compositions, date, end_date, frequency, rebalance_at)
+    def __init__(self, frequency, rebalance_at, weights_type):
+        self.frequency = frequency
+        self.rebalance_at = rebalance_at
+        self.weights_type = weights_type
+
+    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime, end_date) -> dict[str, float]:
+        deciles, next_date, volatilities = super().generate_signals(market_data, compositions, date, end_date, self.frequency, self.rebalance_at)
         low_volatility_decile = deciles[0]
         low_volatility_decile = Utilities.check_universe(low_volatility_decile, market_data, date, next_date)
-        low_volatility_decile = self.generate_weights(low_volatility_decile, volatilities, weights_type, market_data, date)
+        low_volatility_decile = self.generate_weights(low_volatility_decile, volatilities, self.weights_type, market_data, date)
         return low_volatility_decile, next_date
 
 class HighVolatilityDecileStrategy(Strategy):
-    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime, end_date, frequency, rebalance_at, weights_type) -> dict[str, float]:
-        deciles, next_date, volatilities = super().generate_signals(market_data, compositions, date, end_date, frequency, rebalance_at)
+    def __init__(self, frequency, rebalance_at, weights_type):
+        self.frequency = frequency
+        self.rebalance_at = rebalance_at
+        self.weights_type = weights_type
+
+    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime, end_date) -> dict[str, float]:
+        deciles, next_date, volatilities = super().generate_signals(market_data, compositions, date, end_date, self.frequency, self.rebalance_at)
         high_volatility_decile = deciles[-1]
         high_volatility_decile = Utilities.check_universe(high_volatility_decile, market_data, date, next_date)
-        high_volatility_decile = self.generate_weights(high_volatility_decile, volatilities, weights_type, market_data, date)
+        high_volatility_decile = self.generate_weights(high_volatility_decile, volatilities, self.weights_type, market_data, date)
         return high_volatility_decile, next_date
 
 class MidVolatilityDecileStrategy(Strategy):
-    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime, end_date, frequency, rebalance_at, weights_type) -> dict[str, float]:
-        deciles, next_date, volatilities = super().generate_signals(market_data, compositions, date, end_date, frequency, rebalance_at)
+    def __init__(self, frequency, rebalance_at, weights_type):
+        self.frequency = frequency
+        self.rebalance_at = rebalance_at
+        self.weights_type = weights_type
+
+    def generate_signals(self, market_data: dict[str, pd.DataFrame], compositions: list[str], date: datetime, end_date) -> dict[str, float]:
+        deciles, next_date, volatilities = super().generate_signals(market_data, compositions, date, end_date, self.frequency, self.rebalance_at)
         mid_volatility_decile = deciles[4]
         mid_volatility_decile = Utilities.check_universe(mid_volatility_decile, market_data, date, next_date)
-        mid_volatility_decile = self.generate_weights(mid_volatility_decile, volatilities, weights_type, market_data, date)
+        mid_volatility_decile = self.generate_weights(mid_volatility_decile, volatilities, self.weights_type, market_data, date)
         return mid_volatility_decile, next_date
 
 class VolatilityTimingStrategy(Strategy):  

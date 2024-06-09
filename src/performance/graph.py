@@ -26,13 +26,13 @@ class IndexPlotter:
             [ax.axvspan(group.index[0], group.index[-1], color='dodgerblue', alpha=0.1) 
              for label, group in nber_data.groupby('group') if group['USRINDEX Index'].iloc[0] == 1]
 
-        colormap = plt.get_cmap('bone')
+        colormap = plt.get_cmap('Set1')
         linestyle = ["solid", "dashdot", "solid", "dashed", "dashed"]
         
         for i, (name, asset_index) in enumerate(asset_indices.items()):
             track_df = asset_index.quotes_to_dataframe()
-            ax.plot(track_df.index, track_df.iloc[:, 0], label=name, color= colormap(i / len(asset_indices)), 
-                    linestyle=linestyle[i], linewidth=0.75)
+            ax.plot(track_df.index, track_df.iloc[:, 0], label=name, color=colormap.colors[i % len(colormap.colors)],
+                    linestyle=linestyle[i], linewidth=0.5)
         
         if "VolatilityTiming" in asset_indices and 'VolatilityTiming2sided' not in asset_indices:
             handles, labels, ax_holding = IndexPlotter._plot_holding_moments(asset_indices["VolatilityTiming"], ax)
@@ -86,7 +86,7 @@ class IndexPlotter:
         return handles, labels, ax_holding
     
     @staticmethod
-    def plot_tracks_for_diff_rebalancing_freq(asset_indices, label_names, strat_name):
+    def plot_tracks_general(asset_indices, label_names, graph_title):
         """
         Plot the track records for different rebalancing frequencies.
 
@@ -97,15 +97,16 @@ class IndexPlotter:
         """
         fig, ax = plt.subplots()
 
-        colormap = plt.get_cmap('bone')
+        colormap = plt.get_cmap('Set1')
         linestyle = ["solid", "dashdot", "solid", "dashed"]
         
         for i, asset_index in enumerate(asset_indices):
             track_df = asset_index.quotes_to_dataframe()
-            ax.plot(track_df.index, track_df.iloc[:, 0], label=label_names[i], color=colormap(i / len(asset_indices)), 
+            ax.plot(track_df.index, track_df.iloc[:, 0], label=label_names[i], 
+                    color=colormap.colors[i % len(colormap.colors)], 
                     linestyle=linestyle[i], linewidth=0.75)
 
-        ax.set_title(f'{strat_name} - Wealth plot under different rebalancing frequencies')
+        ax.set_title(graph_title)
         ax.set_xlabel('Date')
         ax.set_ylabel('Track Record')
         ax.yaxis.set_label_position('right')

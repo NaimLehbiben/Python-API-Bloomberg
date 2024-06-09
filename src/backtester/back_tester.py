@@ -7,7 +7,7 @@ from src.base.position import Position
 import os
 from tqdm import tqdm
 from src.utils import constant
-from src.data.data_manager import DataManager
+
 
 class AssetIndex:
     def __init__(self, launch_date: datetime, currency: str, strategy: Strategy):
@@ -112,6 +112,9 @@ class BackTesting:
         weights_type = params.get("weights_type", None)
         sign = 1
 
+        if not use_pickle_universe:
+            from src.data.data_manager import DataManager
+
         rebalancing_calendar = Utilities.create_rebalancing_calendar(start_date, end_date, rebalancing_frequency, rebalancing_moment)
         if not use_pickle_universe:
             print("blapi not available on this pc")
@@ -121,8 +124,8 @@ class BackTesting:
             other_US_data = DataManager.fetch_other_US_data(start_date, end_date, ticker,currency)
             Utilities.save_data_to_pickle(other_US_data, file_name="other_US_data",folder_subpath="universe")
         else:
-            compositions = Utilities.get_data_from_pickle("composition_par_date")
-            global_market_data = Utilities.get_data_from_pickle("global_market_data")
+            compositions = Utilities.get_data_from_pickle("composition", folder_subpath="universe")
+            global_market_data = Utilities.get_data_from_pickle("global_market_data", folder_subpath="universe")
             
         tracker = AssetIndex(rebalancing_calendar[0], currency, strategy)
         end_date = rebalancing_calendar[-1]

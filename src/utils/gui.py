@@ -121,11 +121,11 @@ class FinanceApp(tk.Tk):
         elif strategy_name == "VolatilityTiming2sided":
             strategy = VolatilityTimingStrategy2sided(start_date, frequency, constant.REBALANCING_MOMENT, weights_type)
         elif strategy_name == "LowVolatilityDecile":
-            strategy = LowVolatilityDecileStrategy()
+            strategy = LowVolatilityDecileStrategy(frequency, constant.REBALANCING_MOMENT, weights_type)
         elif strategy_name == "MidVolatilityDecile":
-            strategy = MidVolatilityDecileStrategy()
+            strategy = MidVolatilityDecileStrategy(frequency, constant.REBALANCING_MOMENT, weights_type)
         elif strategy_name == "HighVolatilityDecile":
-            strategy = HighVolatilityDecileStrategy()
+            strategy = HighVolatilityDecileStrategy(frequency, constant.REBALANCING_MOMENT, weights_type)
         else:
             messagebox.showerror("Error", "Invalid Strategy Selected")
             return
