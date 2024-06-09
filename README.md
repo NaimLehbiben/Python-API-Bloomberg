@@ -41,7 +41,7 @@ The project includes a user-friendly interface designed using Tkinter. This inte
 - **Weights Type**: A dropdown menu where users can select the type of weighting strategy (Equally Weighted, Max Diversification, Vol Scaling).
 - **Strategy**: A dropdown menu allowing users to select the investment strategy (e.g., Volatility Timing).
 - **Do you have Bloomberg Access?**: A checkbox for users to indicate whether they have access to Bloomberg data.
-- **Run Backtest**: A button that initiates the backtesting process based on the parameters provided by the user.
+
 
 This intuitive interface simplifies the process of setting up and running financial backtests, making it accessible for everyone.
 
