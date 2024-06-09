@@ -7,7 +7,6 @@
 *.gz
 ~$*
 
-
 #official python gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -88,6 +87,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
 # IPython
 profile_default/
@@ -149,7 +149,6 @@ dmypy.json
 cython_debug/
 
 #Ignore Ds_Store
-
 .DS_Store
 
 data/universe/composition.pkl
