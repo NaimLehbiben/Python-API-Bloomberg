@@ -26,13 +26,13 @@ class IndexPlotter:
             [ax.axvspan(group.index[0], group.index[-1], color='dodgerblue', alpha=0.1) 
              for label, group in nber_data.groupby('group') if group['USRINDEX Index'].iloc[0] == 1]
 
-        colormap = plt.get_cmap('bone')
+        colormap = plt.get_cmap('Set1')
         linestyle = ["solid", "dashdot", "solid", "dashed", "dashed"]
         
         for i, (name, asset_index) in enumerate(asset_indices.items()):
             track_df = asset_index.quotes_to_dataframe()
-            ax.plot(track_df.index, track_df.iloc[:, 0], label=name, color= colormap(i / len(asset_indices)), 
-                    linestyle=linestyle[i], linewidth=0.75)
+            ax.plot(track_df.index, track_df.iloc[:, 0], label=name, color=colormap.colors[i % len(colormap.colors)],
+                    linestyle=linestyle[i], linewidth=0.5)
         
         if "VolatilityTiming" in asset_indices and 'VolatilityTiming2sided' not in asset_indices:
             handles, labels, ax_holding = IndexPlotter._plot_holding_moments(asset_indices["VolatilityTiming"], ax)
@@ -86,7 +86,7 @@ class IndexPlotter:
         return handles, labels, ax_holding
     
     @staticmethod
-    def plot_tracks_for_diff_rebalancing_freq(asset_indices, label_names, strat_name):
+    def plot_tracks_general(asset_indices, label_names, graph_title):
         """
         Plot the track records for different rebalancing frequencies.
 
@@ -97,15 +97,16 @@ class IndexPlotter:
         """
         fig, ax = plt.subplots()
 
-        colormap = plt.get_cmap('bone')
+        colormap = plt.get_cmap('Set1')
         linestyle = ["solid", "dashdot", "solid", "dashed"]
         
         for i, asset_index in enumerate(asset_indices):
             track_df = asset_index.quotes_to_dataframe()
-            ax.plot(track_df.index, track_df.iloc[:, 0], label=label_names[i], color=colormap(i / len(asset_indices)), 
+            ax.plot(track_df.index, track_df.iloc[:, 0], label=label_names[i], 
+                    color=colormap.colors[i % len(colormap.colors)], 
                     linestyle=linestyle[i], linewidth=0.75)
 
-        ax.set_title(f'{strat_name} - Wealth plot under different rebalancing frequencies')
+        ax.set_title(graph_title)
         ax.set_xlabel('Date')
         ax.set_ylabel('Track Record')
         ax.yaxis.set_label_position('right')
@@ -274,3 +275,30 @@ class IndexPlotter:
                                     f"({tvalues['SMB']:.3f})", f"({tvalues['HML']:.3f})", ""])
         
         return pd.DataFrame(rows_CPAM, columns=columns_names_CPAM, index=index_names), pd.DataFrame(rows_FF, columns=columns_names_FF, index=index_names)
+
+
+    @staticmethod
+    def display_joint_metrics(*dfs, label_names, column_names):
+        
+        concatenated_dfs = []
+
+        for idx, metrics_df in enumerate(dfs):
+            # Sélectionner uniquement les colonnes spécifiées dans label_names
+            metrics_df_selected = metrics_df[label_names]
+
+            # Renommer les colonnes pour inclure l'indice du DataFrame
+            metrics_df_selected.columns = [f'{col}_{idx+1}' for col in metrics_df_selected.columns]
+
+            # Ajouter le DataFrame traité à la liste
+            concatenated_dfs.append(metrics_df_selected)
+
+        # Concaténer les DataFrames en respectant l'ordre des colonnes
+        combined_df = pd.concat(concatenated_dfs, axis=1)
+
+        # Trier les colonnes dans l'ordre spécifié par label_names
+        combined_df = combined_df.reindex(sorted(combined_df.columns), axis=1)
+
+        # Renommer les colonnes avec les noms spécifiés dans column_names
+        combined_df.columns = pd.MultiIndex.from_product([label_names, column_names])
+
+        return combined_df

@@ -29,7 +29,8 @@ class MetricsCalculator:
         if returns.empty:
             return np.nan
         trading_days_per_year = 252
-        annualized_return = (1 + returns).prod()**(trading_days_per_year / len(returns)) - 1
+        #annualized_return = (1 + returns).prod()**(trading_days_per_year / len(returns)) - 1
+        annualized_return = returns.mean() * trading_days_per_year
         return annualized_return * 100  
 
     def calculate_volatility(self, asset_index):
