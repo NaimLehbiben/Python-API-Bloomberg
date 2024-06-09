@@ -275,3 +275,30 @@ class IndexPlotter:
                                     f"({tvalues['SMB']:.3f})", f"({tvalues['HML']:.3f})", ""])
         
         return pd.DataFrame(rows_CPAM, columns=columns_names_CPAM, index=index_names), pd.DataFrame(rows_FF, columns=columns_names_FF, index=index_names)
+
+
+    @staticmethod
+    def display_joint_metrics(*dfs, label_names, column_names):
+        
+        concatenated_dfs = []
+
+        for idx, metrics_df in enumerate(dfs):
+            # Sélectionner uniquement les colonnes spécifiées dans label_names
+            metrics_df_selected = metrics_df[label_names]
+
+            # Renommer les colonnes pour inclure l'indice du DataFrame
+            metrics_df_selected.columns = [f'{col}_{idx+1}' for col in metrics_df_selected.columns]
+
+            # Ajouter le DataFrame traité à la liste
+            concatenated_dfs.append(metrics_df_selected)
+
+        # Concaténer les DataFrames en respectant l'ordre des colonnes
+        combined_df = pd.concat(concatenated_dfs, axis=1)
+
+        # Trier les colonnes dans l'ordre spécifié par label_names
+        combined_df = combined_df.reindex(sorted(combined_df.columns), axis=1)
+
+        # Renommer les colonnes avec les noms spécifiés dans column_names
+        combined_df.columns = pd.MultiIndex.from_product([label_names, column_names])
+
+        return combined_df
