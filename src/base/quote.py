@@ -1,16 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-
 @dataclass
 class Quote:
     """
-    A data class representing a quote with a date and price.
+    Une classe de données représentant une cotation avec une date et un prix.
 
-    Attributes:
-    - date (datetime): The date of the quote.
-    - price (float): The price associated with the quote.
-
+    Attributs:
+    - date (datetime): La date de la cotation.
+    - price (float): Le prix associé à la cotation.
     """
     date: datetime
     price: float

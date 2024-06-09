@@ -1,23 +1,21 @@
-
 class Position:
     """
-    A class representing a position in a portfolio.
+    Une classe représentant une position dans un portefeuille.
 
-    Attributes:
-    - asset (FinancialAsset): The asset associated with the position.
-    - weight (float): The weight of the position in the portfolio.
-    - quantity (float): The quantity of the asset held in the position.
-    
+    Attributs:
+    - ticker (str): Le symbole boursier de l'actif associé à la position.
+    - weight (float): La pondération de la position dans le portefeuille.
     """
     def __init__(self, ticker: str, weight: float = 0):
         """
-        Initialize a Position object.
+        Initialise un objet Position.
 
-        Parameters:
-        - crypto (CryptoAsset): The asset associated with the position.
-        - weight (float, optional): The weight of the position in the portfolio (default is 0).
-        - quantity (float, optional): The quantity of the asset held in the position (default is 0).
+        Args:
+            ticker (str): Le symbole boursier de l'actif associé à la position.
+            weight (float, optional): La pondération de la position dans le portefeuille (la valeur par défaut est 0).
+
+        Returns:
+            None
         """
         self.ticker = ticker
         self.weight = weight
-
