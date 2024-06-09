@@ -48,14 +48,14 @@ class FinanceApp(tk.Tk):
         self.start_date_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
         self.start_date_entry = DateEntry(self, date_pattern='yyyy-mm-dd')
         self.start_date_entry.grid(row=1, column=1, padx=10, pady=10)
-        self.start_date_entry.set_date(datetime(2000, 1, 3))
+        self.start_date_entry.set_date(datetime(2000, 1, 31))
 
         # End Date
         self.end_date_label = tk.Label(self, text="End Date")
         self.end_date_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
         self.end_date_entry = DateEntry(self, date_pattern='yyyy-mm-dd')
         self.end_date_entry.grid(row=2, column=1, padx=10, pady=10)
-        self.end_date_entry.set_date(datetime(2000, 3, 1))
+        self.end_date_entry.set_date(datetime(2024, 2, 29))
 
         # Rebalancing Frequency
         self.frequency_label = tk.Label(self, text="Rebalancing Frequency")
@@ -121,11 +121,11 @@ class FinanceApp(tk.Tk):
         elif strategy_name == "VolatilityTiming2sided":
             strategy = VolatilityTimingStrategy2sided(start_date, frequency, constant.REBALANCING_MOMENT, weights_type)
         elif strategy_name == "LowVolatilityDecile":
-            strategy = LowVolatilityDecileStrategy()
+            strategy = LowVolatilityDecileStrategy(frequency, constant.REBALANCING_MOMENT, weights_type)
         elif strategy_name == "MidVolatilityDecile":
-            strategy = MidVolatilityDecileStrategy()
+            strategy = MidVolatilityDecileStrategy(frequency, constant.REBALANCING_MOMENT, weights_type)
         elif strategy_name == "HighVolatilityDecile":
-            strategy = HighVolatilityDecileStrategy()
+            strategy = HighVolatilityDecileStrategy(frequency, constant.REBALANCING_MOMENT, weights_type)
         else:
             messagebox.showerror("Error", "Invalid Strategy Selected")
             return
@@ -153,6 +153,8 @@ class FinanceApp(tk.Tk):
             IndexPlotter.plot_track_records({strategy_name: asset_index}, other_data['USRINDEX Index'])
 
             asset_index.get_port_file(strategy_name)
+
+            Utilities.save_data_to_pickle(asset_index, file_name=strategy_name, folder_subpath="asset_indices\\monthly_vol_scaling")
 
             results = "Backtest completed successfully!"
             messagebox.showinfo("Backtest Results", results)

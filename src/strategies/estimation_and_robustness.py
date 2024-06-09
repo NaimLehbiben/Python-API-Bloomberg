@@ -76,9 +76,10 @@ class Estimation:
         return model.params, nw_tvalues, model.rsquared, significance_indic
 
     @staticmethod
-    def __calc_cov_matrix(decile, market_data, date):
+    def __calc_cov_matrix(decile, market_data, date, frequency, rebalance_at):
 
-        previous_date = Utilities.get_rebalancing_date(date, sign = -1, step = constant.STEP_VOL)
+        previous_date = Utilities.get_rebalancing_date(date, sign = -1, frequency=frequency, 
+                                                       rebalance_at=rebalance_at,step = constant.STEP_VOL)
         returns_df  = pd.concat([market_data[ticker].loc[previous_date:date] 
                                  for ticker in decile 
                                  if ticker in market_data], axis=1).pct_change().dropna()
@@ -95,9 +96,9 @@ class Estimation:
         return -diversification_ratio
 
     @staticmethod
-    def optimize_diversification_ratio(decile, market_data, date, weights):
+    def optimize_diversification_ratio(decile, market_data, date, weights, frequency, rebalancing_at):
 
-        cov = Estimation.__calc_cov_matrix(decile, market_data, date)
+        cov = Estimation.__calc_cov_matrix(decile, market_data, date, frequency, rebalancing_at)
         optimal_weights = minimize(Estimation.__calc_diversification_ratio, x0=np.array(list(weights.values())), args=cov,
                                         method='SLSQP', bounds = tuple((0.01, 1) for w in weights.values()), 
                                         constraints=({'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}))
