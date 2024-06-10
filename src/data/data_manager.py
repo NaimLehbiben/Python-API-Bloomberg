@@ -118,6 +118,6 @@ class DataManager:
         other_US_data = {}
         
         # Obtention des données de marché pour les tickers spécifiés
-        other_US_data, tickers_a_supp = DataManager.get_historical_prices(start_date, end_date, tickers, curr)
+        other_US_data = DataManager.get_historical_prices(start_date, end_date, tickers, curr)
         
         return other_US_data
