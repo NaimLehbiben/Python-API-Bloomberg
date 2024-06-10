@@ -241,7 +241,7 @@ class BackTesting:
         # Création du calendrier de rééquilibrage
         rebalancing_calendar = Utilities.create_rebalancing_calendar(start_date, end_date, rebalancing_frequency, rebalancing_moment)
         if not use_pickle_universe:
-            print("blapi not available on this pc")
+            print("*** BL API scrapping is running ***")
             compositions, global_market_data = DataManager.fetch_backtest_data(start_date, end_date, ticker, currency, rebalancing_frequency, rebalancing_moment, sign)
             Utilities.save_data_to_pickle(compositions, file_name="composition", folder_subpath="universe")
             Utilities.save_data_to_pickle(global_market_data, file_name="global_market_data", folder_subpath="universe")
