@@ -128,22 +128,33 @@ class IndexPlotter:
         """
         metrics_calculator = MetricsCalculator(other_data, risk_free_rate_ticker)
         strat_names = ["HighVolatilityDecile", "VolatilityTiming2sided", "MidVolatilityDecile","VolatilityTiming","LowVolatilityDecile"]
-        annualized_returns = [metrics_calculator.calculate_return(asset_indices[name]) for name in strat_names]
-        annualized_vol = [metrics_calculator.calculate_volatility(asset_index) for asset_index in asset_indices.values()]
+        annualized_returns = [metrics_calculator.calculate_annualized_return(asset_indices[name]) for name in strat_names]
+        annualized_vol = [metrics_calculator.calculate_volatility(asset_index, period='annual') for asset_index in asset_indices.values()]
+        monthly_vol = [metrics_calculator.calculate_volatility(asset_index, period='monthly') for asset_index in asset_indices.values()]
+        daily_vol = [metrics_calculator.calculate_volatility(asset_index, period='daily') for asset_index in asset_indices.values()]
         annualized_sharpe = [metrics_calculator.calculate_sharpe_ratio(asset_indices[name]) for name in strat_names]
+        var_95 = [metrics_calculator.calculate_var(asset_index, confidence_level=0.95) for asset_index in asset_indices.values()]
 
-        fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+        fig, ax = plt.subplots(2, 2, figsize=(14, 10))
 
-        ax[0].bar(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], annualized_vol, color='blue', width=0.8)
-        ax[0].set_ylabel('Volatility')
+        # Annualized Volatility
+        ax[0, 0].bar(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], annualized_vol, color='blue', width=0.8)
+        ax[0, 0].set_ylabel('Annualized Volatility')
 
-        ax2 = ax[1].twinx()
-        ax[1].bar(['High','Vol \n2sided', 'Mid','Vol \nTiming','Low'], annualized_returns, color='green', width=0.8, align='center')
-        ax[1].set_ylabel('Return')
+        # Monthly Volatility
+        ax[0, 1].bar(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], monthly_vol, color='blue', width=0.8)
+        ax[0, 1].set_ylabel('Monthly Volatility')
 
-        ax2.plot(['High','Vol \n2sided', 'Mid','Vol \nTiming','Low'], annualized_sharpe, color='black', marker='o', linestyle='-', linewidth=2, markersize=8, label='Sharpe')
-        ax2.set_ylabel('Sharpe')
-        ax2.legend(loc='upper left')
+        # Daily Volatility
+        ax[1, 0].bar(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], daily_vol, color='blue', width=0.8)
+        ax[1, 0].set_ylabel('Daily Volatility')
+
+        # VaR 95%
+        ax[1, 1].bar(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], var_95, color='blue', width=0.8)
+        ax[1, 1].set_ylabel('VaR 95%')
+
+        for a in ax.flat:
+            a.set_xticklabels(['Low','Mid','High','Vol \nTiming','Vol \n2sided'], rotation=45, ha='right')
 
         fig.tight_layout()
         plt.show()
@@ -227,7 +238,7 @@ class IndexPlotter:
         })
 
         metrics_df = metrics_df.applymap(lambda x: x.item() if isinstance(x, pd.Series) else x)
-        metrics_df.update(metrics_df.loc[['Return', 'Volatility', 'Max Drawdown', 'SQRT (Semi-variance)']].applymap(lambda x: f"{x:.2f}%" if pd.notnull(x) else "NaN"))
+        metrics_df.update(metrics_df.loc[['Total Return','Annualized Return', 'Annualized Volatility', 'Monthly Volatility', 'Daily Volatility', 'Max Drawdown', 'SQRT (Semi-variance)', 'Historical VaR (95%)']].applymap(lambda x: f"{x:.2f}%" if pd.notnull(x) else "NaN"))
 
         metrics_df.replace([-np.inf, np.inf], 'Benchmark', inplace=True)
 

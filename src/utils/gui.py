@@ -22,6 +22,7 @@ from src.strategies.strategies import (
 )
 from src.utils.utilities import Utilities
 from src.performance.graph import IndexPlotter
+from src.performance.metrics import MetricsCalculator
 
 # Import constants
 import src.utils.constant as constant
@@ -102,6 +103,15 @@ class FinanceApp(tk.Tk):
         self.run_button = tk.Button(self, text="Run Backtest", command=self.run_backtest)
         self.run_button.grid(row=8, column=0, columnspan=2, pady=20)
 
+        # Treeview for displaying results
+        self.results_tree = ttk.Treeview(self, columns=("Metric", "Value"), show="headings")
+        self.results_tree.heading("Metric", text="Metric")
+        self.results_tree.heading("Value", text="Value")
+        self.results_tree.grid(row=9, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
+        self.grid_rowconfigure(9, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+
     def run_backtest(self):
         ticker = self.ticker_entry.get()
         start_date = self.start_date_entry.get_date()
@@ -152,6 +162,21 @@ class FinanceApp(tk.Tk):
             other_data = Utilities.get_data_from_pickle('other_US_data', folder_subpath="universe")
             IndexPlotter.plot_track_records({strategy_name: asset_index}, other_data['USRINDEX Index'])
 
+            # Calculate metrics
+            metrics_calculator = MetricsCalculator(other_data, risk_free_rate_ticker)
+            metrics = metrics_calculator.calculate_core_metrics(asset_index, asset_index)
+
+            # Ensure metrics are simple numerical values and append '%'
+            metrics = {k: f"{v:.2f}%" if not isinstance(v, pd.Series) else f"{v.iloc[0]:.2f}%" for k, v in metrics.items()}
+
+            # Clear previous results
+            for item in self.results_tree.get_children():
+                self.results_tree.delete(item)
+
+            # Insert new results into the Treeview
+            for metric, value in metrics.items():
+                self.results_tree.insert("", "end", values=(metric, value))
+
             asset_index.get_port_file(strategy_name)
 
             Utilities.save_data_to_pickle(asset_index, file_name=strategy_name, folder_subpath="asset_indices\\monthly_vol_scaling")
@@ -161,5 +186,5 @@ class FinanceApp(tk.Tk):
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
-        finally:
-            self.destroy()  
+
+
