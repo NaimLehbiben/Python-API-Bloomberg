@@ -94,7 +94,7 @@ class FinanceApp(tk.Tk):
         # Bloomberg Access
         self.bloomberg_label = tk.Label(self, text="Do you have Bloomberg Access?")
         self.bloomberg_label.grid(row=7, column=0, padx=10, pady=10, sticky=tk.W)
-        self.bloomberg_var = tk.BooleanVar()
+        self.bloomberg_var = tk.BooleanVar(value=True)
         self.bloomberg_checkbutton = tk.Checkbutton(self, text="Yes", variable=self.bloomberg_var)
         self.bloomberg_checkbutton.grid(row=7, column=1, padx=10, pady=10)
 
@@ -162,5 +162,4 @@ class FinanceApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", str(e))
         finally:
-            self.destroy()  # Fermer la fenêtre après avoir lancé le code
-
+            self.destroy()  
