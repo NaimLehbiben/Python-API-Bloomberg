@@ -186,5 +186,6 @@ class FinanceApp(tk.Tk):
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
-
+        finally:
+            self.destroy()  # Fermer la fenêtre après avoir lancé le code
 

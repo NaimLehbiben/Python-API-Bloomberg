@@ -22,6 +22,9 @@ class Estimation:
             
         t_statistic, p_value = ttest_1samp(slope, 0, alternative=alternative, nan_policy ="omit")
                 
+        # Test de Student t à une seule échantillon 
+        p_value = ttest_1samp(slope, 0, alternative=alternative, nan_policy ="omit")
+        
         # Vérification de la p-value par rapport au niveau de significativité
         return p_value < alpha
             
