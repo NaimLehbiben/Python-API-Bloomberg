@@ -33,15 +33,29 @@ The project includes a user-friendly interface designed using Tkinter. This inte
 
 ### Finance Backtesting Tool
 
-- **Ticker**: A text input field where users can enter the Bloomberg ticker symbol of the financial instrument they wish to analyze.
+- **Ticker**: A text input field where users can enter the **Bloomberg** ticker symbol of the financial instrument they wish to analyze.
 - **Start Date**: A date picker allowing users to select the start date for the analysis.
 - **End Date**: A date picker allowing users to select the end date for the analysis.
 - **Rebalancing Frequency**: A dropdown menu where users can choose the frequency of rebalancing (e.g., monthly).
-- **Risk-Free Rate Ticker**: A text input field for users to enter the Bloomberg ticker symbol of the risk-free rate.
+- **Risk-Free Rate Ticker**: A text input field for users to enter the **Bloomberg** ticker symbol of the risk-free rate.
 - **Weights Type**: A dropdown menu where users can select the type of weighting strategy (Equally Weighted, Max Diversification, Vol Scaling).
 - **Strategy**: A dropdown menu allowing users to select the investment strategy (e.g., Volatility Timing).
 - **Do you have Bloomberg Access?**: A checkbox for users to indicate whether they have access to Bloomberg data.
+- **Run Backtest**: A button to start the backtest based on the selected parameters.
 
+### Results Display
+
+After running the backtest, the results will be displayed in a table format within the interface. The metrics computed include:
+
+- **Total Return**: The overall return of the strategy over the specified period.
+- **Annualized Return**: The annualized return of the strategy.
+- **Annualized Volatility**: The annualized volatility of the strategy.
+- **Monthly Volatility**: The monthly volatility of the strategy.
+- **Daily Volatility**: The daily volatility of the strategy.
+- **Sharpe Ratio**: The Sharpe ratio of the strategy.
+- **Historical VaR (95%)**: The historical Value at Risk (VaR) at a 95% confidence level.
+
+Each value in the table is displayed as a percentage for easy interpretation.
 
 This intuitive interface simplifies the process of setting up and running financial backtests, making it accessible for everyone.
 
