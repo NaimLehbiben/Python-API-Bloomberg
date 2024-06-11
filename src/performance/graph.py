@@ -303,4 +303,23 @@ class IndexPlotter:
 
         return combined_df
 
-    
+    @staticmethod
+    def disp_switch_stats(asset_indices_monthly, other_data, risk_free_rate_ticker):
+        
+        metrics_calculator = MetricsCalculator(other_data, risk_free_rate_ticker)
+        switch_stats = metrics_calculator.calculate_switch_performance(asset_indices_monthly,"monthly")
+
+        if "VolatilityTiming" in asset_indices_monthly.keys():
+            total_switches_str = f"Low-/High-vol split: {round(switch_stats['Holding Low Percentage'])}%/{round(switch_stats['Holding High Percentage'])}%"
+
+        else:
+            holding_mid_percentage =  100 -(switch_stats['Holding Low Percentage'] + switch_stats['Holding High Percentage'])
+            total_switches_str = f"Low-/Mid-/High-vol split: {round(switch_stats['Holding Low Percentage'])}%/{round(holding_mid_percentage)}%/{round(switch_stats['Holding High Percentage'])}%"
+
+        df = pd.DataFrame({
+            'Correct Switches': [f"{round(switch_stats['Correct Switch Percentage'], 1)}%", f"{round(switch_stats['Correct Switch Total Performance'], 1)}%"],
+            'Wrong Switches': [f"{round(switch_stats['Incorrect Switch Percentage'], 1)}%", f"{round(switch_stats['Incorrect Switch Total Performance'], 1)}%"],
+            'Total Switches': [total_switches_str, ""]
+        }, index=['Percentage', 'Total Return Out Performance'])
+
+        return df
