@@ -173,52 +173,6 @@ class MetricsCalculator:
             'Historical VaR (95%)': self.calculate_var(asset_index, confidence_level=0.95)
         }
 
-    def calculate_switch_performance(self, strategy, market_data, compositions, start_date, end_date):
-        correct_switches = 0
-        incorrect_switches = 0
-        correct_switch_performance = 0
-        incorrect_switch_performance = 0
-        total_switches = 0
-        
-        date = start_date
-        end_date = end_date
-
-        while date < end_date:
-            next_date = Utilities.get_rebalancing_date(date, sign=1, frequency=strategy.frequency, rebalance_at=strategy.rebalance_at)
-
-            if next_date > end_date:
-                break
-            
-            low_decile, _ = LowVolatilityDecileStrategy(strategy.frequency, strategy.rebalance_at, strategy.weights_type).generate_signals(market_data, compositions, date, end_date)
-            high_decile, _ = HighVolatilityDecileStrategy(strategy.frequency, strategy.rebalance_at, strategy.weights_type).generate_signals(market_data, compositions, date, end_date)
-            slope = strategy._build_slope(market_data, low_decile, high_decile, date, strategy.frequency, strategy.rebalance_at)
-            
-            if Estimation.is_slope_positive_or_negative(slope, alpha=SLOPE_ALPHA, pos_or_neg='pos'):
-                signal = 'High'
-            else:
-                signal = 'Low'
-            
-            if signal == strategy.ptf_hold.get(next_date, 'Low'):
-                correct_switches += 1
-                correct_switch_performance += (market_data[signal].loc[next_date] / market_data[signal].loc[date] - 1) * 100
-            else:
-                incorrect_switches += 1
-                incorrect_switch_performance += (market_data[signal].loc[next_date] / market_data[signal].loc[date] - 1) * 100
-                
-            total_switches += 1
-            date = next_date
-        
-        correct_switch_percentage = (correct_switches / total_switches) * 100 if total_switches > 0 else 0
-        incorrect_switch_percentage = (incorrect_switches / total_switches) * 100 if total_switches > 0 else 0
-        correct_switch_avg_performance = correct_switch_performance / correct_switches if correct_switches > 0 else 0
-        incorrect_switch_avg_performance = incorrect_switch_performance / incorrect_switches if incorrect_switches > 0 else 0
-        
-        return {
-            'Correct Switch Percentage': correct_switch_percentage,
-            'Incorrect Switch Percentage': incorrect_switch_percentage,
-            'Correct Switch Average Performance': correct_switch_avg_performance,
-            'Incorrect Switch Average Performance': incorrect_switch_avg_performance
-        }
 
     def _calc_good_bad_mkt_stats(self, asset_indices, start_date, end_date, frequency, rebalance_at, ticker):
         index_returns = self.other_data[ticker].pct_change().dropna()
