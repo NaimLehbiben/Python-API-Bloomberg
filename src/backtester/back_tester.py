@@ -245,7 +245,7 @@ class BackTesting:
             compositions, global_market_data = DataManager.fetch_backtest_data(start_date, end_date, ticker, currency, rebalancing_frequency, rebalancing_moment, sign)
             Utilities.save_data_to_pickle(compositions, file_name="composition", folder_subpath="universe")
             Utilities.save_data_to_pickle(global_market_data, file_name="global_market_data", folder_subpath="universe")
-            other_US_data = DataManager.fetch_other_US_data(start_date, end_date, ticker, currency)
+            other_US_data = DataManager.fetch_other_US_data(start_date, end_date, ticker, risk_free_rate_ticker,currency)
             Utilities.save_data_to_pickle(other_US_data, file_name="other_US_data", folder_subpath="universe")
         else:
             compositions = Utilities.get_data_from_pickle("composition", folder_subpath="universe")
