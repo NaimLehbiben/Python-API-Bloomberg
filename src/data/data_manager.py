@@ -98,9 +98,10 @@ class DataManager:
         composition_par_date = {date: [ticker for ticker in tickers if ticker not in tickers_a_supp] for date, tickers in composition_par_date.items()}    
         
         return composition_par_date, global_market_data     
+    
 
     @staticmethod
-    def fetch_other_US_data(start_date: datetime, end_date: datetime, ticker: str, curr: str) -> dict:
+    def fetch_other_US_data(start_date: datetime, end_date: datetime, ticker: str, risk_free_rate_ticker: str, curr: str) -> dict:
         """
         Récupère d'autres données de marché américaines pour une période donnée.
 
@@ -108,12 +109,13 @@ class DataManager:
             start_date (datetime): La date de début.
             end_date (datetime): La date de fin.
             ticker (str): Le ticker de l'actif.
+            risk_free_rate_ticker (str): Le ticker du taux sans risque.
             curr (str): La devise.
 
         Returns:
             dict: Un dictionnaire des autres données de marché américaines.
         """
-        tickers = ["USRINDEX Index", "US0003M Index"]
+        tickers = ["USRINDEX Index", risk_free_rate_ticker]
         tickers.append(ticker)
         other_US_data = {}
         
