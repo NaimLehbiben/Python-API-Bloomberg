@@ -302,3 +302,5 @@ class IndexPlotter:
         combined_df.columns = pd.MultiIndex.from_product([label_names, column_names])
 
         return combined_df
+
+    

@@ -3,7 +3,7 @@ import pandas as pd
 from utils.utilities import Utilities
 from src.strategies.strategies import LowVolatilityDecileStrategy, HighVolatilityDecileStrategy, MidVolatilityDecileStrategy
 from src.strategies.estimation_and_robustness import Estimation
-from src.utils.constant import SLOPE_ALPHA
+from src.utils.constant import SLOPE_ALPHA, REBALANCING_MOMENT
 
 class MetricsCalculator:
     def __init__(self, other_data, risk_free_rate_ticker):
@@ -172,6 +172,41 @@ class MetricsCalculator:
             'Sharpe Ratio': self.calculate_sharpe_ratio(asset_index),
             'Historical VaR (95%)': self.calculate_var(asset_index, confidence_level=0.95)
         }
+
+
+    def calculate_switch_performance(asset_indices, frequency):
+        
+        correct_switches = 0
+        incorrect_switches = 0
+        correct_switch_performance = 0
+        incorrect_switch_performance = 0
+        total_switches = 0
+
+        if "VolatilityTiming" in asset_indices.keys():
+            low_price_df = asset_indices["LowVolatilityDecile"].quotes_to_dataframe()
+            high_price_df = asset_indices["HighVolatilityDecile"].quotes_to_dataframe()
+            ptf_hold_dict = asset_indices["VolatilityTiming"].strategy.ptf_hold
+            for date in ptf_hold_dict.keys()[1:]:
+                if ptf_hold_dict[date] != "Low":
+                    total_switches +=1
+                    previous_date = Utilities.get_rebalancing_date(date, -1, frequency, REBALANCING_MOMENT) 
+                    perf_base = (low_price_df.loc[date] / low_price_df.loc[previous_date] - 1) *100
+                    perf_high = (high_price_df.loc[date] / high_price_df.loc[previous_date] - 1) *100
+
+                    if perf_high > perf_base:
+                        correct_switches +=1
+                        correct_switch_performance += (perf_high - perf_base)
+                    else:
+                        incorrect_switches +=1
+                        incorrect_switch_performance += (perf_high - perf_base)
+
+        return {
+            'Correct Switch Percentage': 100 * correct_switches / total_switches,
+            'Incorrect Switch Percentage': 100 * incorrect_switches / total_switches,
+            'Correct Switch Average Performance': correct_switch_performance,
+            'Incorrect Switch Average Performance': incorrect_switch_performance
+        }
+
 
 
     def _calc_good_bad_mkt_stats(self, asset_indices, start_date, end_date, frequency, rebalance_at, ticker):
