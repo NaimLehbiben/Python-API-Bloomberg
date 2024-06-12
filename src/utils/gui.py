@@ -33,7 +33,9 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 class FinanceApp(tk.Tk):
+    """Classe représentant l'application de backtesting."""
     def __init__(self):
+        """Initialise l'interface graphique de l'application."""
         super().__init__()
         self.title("Finance Backtesting Tool")
 
@@ -113,6 +115,7 @@ class FinanceApp(tk.Tk):
         self.grid_columnconfigure(1, weight=1)
 
     def run_backtest(self):
+        """Lance le backtest avec les paramètres spécifiés par l'utilisateur."""
         ticker = self.ticker_entry.get()
         start_date = self.start_date_entry.get_date()
         end_date = self.end_date_entry.get_date()

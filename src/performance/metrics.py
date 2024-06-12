@@ -8,7 +8,7 @@ from src.utils.constant import SLOPE_ALPHA, REBALANCING_MOMENT
 class MetricsCalculator:
     def __init__(self, other_data, risk_free_rate_ticker):
         """
-        Initialize the MetricsCalculator with the given risk-free rate ticker and other data.
+        Initialise le calculateur de métriques avec le ticker du taux sans risque et d'autres données.
         """
         self.risk_free_rate_ticker = risk_free_rate_ticker
         self.risk_free_rate = self._get_risk_free_rate(other_data)
@@ -16,7 +16,7 @@ class MetricsCalculator:
         
     def _get_risk_free_rate(self, other_data):
         """
-        Get the risk-free rate from the other data provided.
+        Obtient le taux sans risque à partir des autres données fournies.
         """
         if self.risk_free_rate_ticker in other_data:
             return other_data[self.risk_free_rate_ticker].mean() / 252  
@@ -25,7 +25,7 @@ class MetricsCalculator:
 
     def calculate_total_return(self, asset_index):
         """
-        Calculate the total return of the asset index.
+        Calcule le rendement total de l'indice d'actifs.
         """
         prices = [quote.price for quote in asset_index.price_history]
         total_return = (prices[-1] / prices[0] - 1) * 100
@@ -33,7 +33,7 @@ class MetricsCalculator:
 
     def calculate_annualized_return(self, asset_index):
         """
-        Calculate the annualized return of the asset index.
+        Calcule le rendement annualisé de l'indice d'actifs.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -45,8 +45,8 @@ class MetricsCalculator:
 
     def calculate_volatility(self, asset_index, period='annual'):
         """
-        Calculate the volatility of the asset index.
-        period: 'annual', 'monthly', 'daily'
+        Calcule la volatilité de l'indice d'actifs.
+        période: 'annuel', 'mensuel', 'quotidien'
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -68,7 +68,7 @@ class MetricsCalculator:
 
     def calculate_sharpe_ratio(self, asset_index):
         """
-        Calculate the Sharpe ratio of the asset index.
+        Calcule le ratio de Sharpe de l'indice d'actifs.
         """
         mean_return = self.calculate_annualized_return(asset_index)
         volatility = self.calculate_volatility(asset_index, period='annual')
@@ -79,7 +79,7 @@ class MetricsCalculator:
 
     def calculate_max_drawdown(self, asset_index):
         """
-        Calculate the maximum drawdown of the asset index.
+        Calcule le drawdown maximal de l'indice d'actifs.
         """
         prices = [quote.price for quote in asset_index.price_history]
         cumulative_returns = (1 + pd.Series(prices).pct_change().dropna()).cumprod()
@@ -92,7 +92,7 @@ class MetricsCalculator:
     
     def calculate_semi_variance(self, asset_index):
         """
-        Calculate the semi-variance of the asset index.
+        Calcule la semi-variance de l'indice d'actifs.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -106,7 +106,7 @@ class MetricsCalculator:
 
     def calculate_sortino_ratio(self, asset_index):
         """
-        Calculate the Sortino ratio of the asset index.
+        Calcule le ratio de Sortino de l'indice d'actifs.
         """
         mean_return = self.calculate_annualized_return(asset_index)
         semi_variance = self.calculate_semi_variance(asset_index)
@@ -115,7 +115,7 @@ class MetricsCalculator:
 
     def calculate_information_ratio(self, asset_index, benchmark_data):
         """
-        Calculate the Information ratio of the asset index.
+        Calcule le ratio d'information de l'indice d'actifs.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -132,7 +132,7 @@ class MetricsCalculator:
     
     def calculate_var(self, asset_index, confidence_level=0.95):
         """
-        Calculate the historical Value at Risk (VaR) of the asset index.
+        Calcule la Value at Risk historique (VaR) de l'indice d'actifs.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -143,7 +143,7 @@ class MetricsCalculator:
     
     def calculate_all_metrics(self, asset_index, benchmark_data):
         """
-        Calculate all relevant metrics for the asset index.
+        Calcule toutes les métriques pertinentes pour l'indice d'actifs.
         """
         return {
             'Total Return': self.calculate_total_return(asset_index),
@@ -161,7 +161,7 @@ class MetricsCalculator:
 
     def calculate_core_metrics(self, asset_index, benchmark_data):
         """
-        Calculate the core metrics for the asset index.
+        Calcule les métriques de base pour l'indice d'actifs.
         """
         return {
             'Total Return': self.calculate_total_return(asset_index),
@@ -175,7 +175,20 @@ class MetricsCalculator:
 
 
     def calculate_switch_performance(self, asset_indices, frequency):
-        
+
+        """
+        Calcule la performance générée par la détention des portefeuilles alternatifs
+        pour les différentes stratégies.
+
+        Args:
+            asset_indices (dict): Dictionnaire contenant les indices d'actifs
+            frequency (str): Fréquence de rebalancement ('daily', 'weekly', 'monthly', etc.).
+
+        Returns:
+            dict: Un dictionnaire contenant les métriques de performance de switch :
+        """    
+
+
         correct_switches = 0
         incorrect_switches = 0
         correct_switch_performance = 0
@@ -252,6 +265,23 @@ class MetricsCalculator:
 
 
     def _calc_good_bad_mkt_stats(self, asset_indices, start_date, end_date, frequency, rebalance_at, ticker):
+        """
+        Calcule les statistiques des stratégies en cas de bonne et mauvaise conjecture
+
+        Args:
+            asset_indices (dict): Dictionnaire contenant les strtégies.
+            start_date (str): Date de début au format 'YYYY-MM-DD'.
+            end_date (str): Date de fin au format 'YYYY-MM-DD'.
+            frequency (str): Fréquence de rebalancement
+            rebalance_at (str): Moment du rebalancement 
+            ticker (str): Ticker utilisé de l'indice de référence
+
+        Returns:
+            tuple: Les statistiques moyennes pour chaque stratégies en cas de bonnes 
+            et mauvaises conditions de marché
+      
+        """
+        
         index_returns = self.other_data[ticker].pct_change().dropna()
         risk_free_rate = self.other_data[self.risk_free_rate_ticker] / 100
         rebalancing_dates = Utilities.create_rebalancing_calendar(start_date, end_date, frequency, rebalance_at)

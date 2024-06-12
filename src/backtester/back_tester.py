@@ -11,12 +11,12 @@ from src.utils import constant
 class AssetIndex:
     def __init__(self, launch_date: datetime, currency: str, strategy: Strategy):
         """
-        Initialisation de la classe AssetIndex.
-        
+        Initialise la classe AssetIndex.
+
         Args:
             launch_date (datetime): La date de lancement de l'indice.
             currency (str): La devise utilisée pour l'indice.
-            strategy (Strategy): La stratégie utilisée pour générer des signaux de trading.
+            strategy (Strategy): La stratégie utilisée pour générer les signaux de la startégie.
         """
         self.launch_date = launch_date
         self.currency = currency
@@ -29,12 +29,12 @@ class AssetIndex:
     def rebalance_portfolio(self, date: datetime, end_date: datetime, global_market_data: dict[str, pd.DataFrame] = None, 
                             universe: dict[str, list[str]] = None) -> None:
         """
-        Rééquilibre le portefeuille selon la stratégie définie.
+        Rebalance le portefeuille selon la stratégie définie.
 
         Args:
-            date (datetime): La date actuelle de rééquilibrage.
-            end_date (datetime): La date de fin de la période de rééquilibrage.
-            global_market_data (dict[str, pd.DataFrame], optional): Données de marché globales. Defaults to None.
+            date (datetime): La date actuelle de rebalancement.
+            end_date (datetime): La date de fin de la période de rebalancement.
+            global_market_data (dict[str, pd.DataFrame], optional): Données de marché. Defaults to None.
             universe (dict[str, list[str]], optional): Univers d'investissement. Defaults to None.
 
         Returns:
@@ -125,13 +125,13 @@ class AssetIndex:
 
     def update_historical_prices(self, new_weights: dict[str, float], market_data: dict[str, pd.DataFrame], date: datetime, next_date: datetime) -> None:
         """
-        Met à jour l'historique des prix avec de nouvelles pondérations et données de marché.
+        Met à jour l'historique des prix à partir de nouveaux poids et données de marché.
 
         Args:
-            new_weights (dict[str, float]): Nouvelles pondérations des actifs.
+            new_weights (dict[str, float]): Nouveaux poids des actifs.
             market_data (dict[str, pd.DataFrame]): Données de marché.
             date (datetime): Date actuelle.
-            next_date (datetime): Prochaine date de rééquilibrage.
+            next_date (datetime): Prochaine date de rebalancment.
 
         Returns:
             None
@@ -153,7 +153,7 @@ class AssetIndex:
         price_history_df = pd.DataFrame(weighted_returns)
         return_history_df["Rend"] = price_history_df.iloc[:, 1:].sum(axis=1)
 
-        # Soustrait les coûts de transactions liés au rééquilibrage
+        # Soustrait les coûts de transactions liés au rebalancement
         return_history_df["Rend"].iloc[0] -= constant.TRANSACTION_COST / 10000
         
         if not self.price_history:
