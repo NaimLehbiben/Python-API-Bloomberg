@@ -17,12 +17,12 @@ class Estimation:
         """
         Vérifie si la pente est positive ou négative en effectuant un test de Student unilatéral.
 
-        Args:
+        Paramètres:
             slope (array-like): TimeSeries de la pente.
             alpha (float): Niveau de signification pour le test.
             pos_or_neg (str): indique si tester si la pente et positive ou négative
 
-        Returns:
+        Retourne:
             bool: True si la pente est significativement positive ou négative, False sinon.
         """
         if pos_or_neg == 'pos':
@@ -40,12 +40,13 @@ class Estimation:
     @staticmethod
     def Cpam_FF_regress_statics(asset_indices):
         """
-        Effectue une régression sur les facteurs CPAM et Fama-French des différentes stratégies.
+        Renvoi les statitsiques de la régression sur les facteurs CPAM et Fama-French, 
+        de rendements des différentes stratégies.
 
-        Args:
+        Paramètres:
             asset_indices (dict): Dictionnaire contenant les indices d'actifs à analyser.
 
-        Returns:
+        Retourne:
             dict: Un dictionnaire contenant les statistiques de régression pour chaque stratégie :
                 - 'CPAM': Résultats (alpha, betas, R2) de la régression sur le facteur marché.
                 - 'Fama-French': Résultats (alpha, betas, R2) de la régression sur les trois facteurs (marché, SMB, HML).
@@ -67,11 +68,11 @@ class Estimation:
         Réalise la régression des rendements mensuels de la stratétgie passée en argument 
         sur les facteurs CPAM et Fama-French.
 
-        Args:
+        Paramètres:
             asset_index (object): Stratégie pour lequelle effectuer la régression.
             factors (DataFrame): DataFrame des facteurs CPAM et Fama-French.
 
-        Returns:
+        Retourne:
             dict: Un dictionnaire contenant les résultats des régressions :
                 - 'CPAM': Coefficients, t-values, R² et indicatrice de significativité pour le modèle CPAM.
                 - 'Fama-French': Coefficients, t-values, R² et indicatrice de significativité pour le modèle Fama-French.
@@ -100,11 +101,11 @@ class Estimation:
         """
         Effectue une régression linéaire ordinaire (OLS) et calcule les t-values ajustées.
 
-        Args:
+        Paramètres:
             X (DataFrame): Variables indépendantes pour la régression.
             y (Series): Variable dépendante pour la régression.
 
-        Returns:
+        Retourne:
             tuple: Un tuple contenant les résultats de la régression :
                 - Coefficients des variables indépendantes.
                 - t-values ajustées des coefficients.
@@ -124,16 +125,16 @@ class Estimation:
     @staticmethod
     def __calc_cov_matrix(decile, market_data, date, frequency, rebalance_at):
         """
-        Calcule la matrice de covariance ajustée pour un décile spécifique à une date donnée.
+        Calcule la matrice de covariance de Newey et West pour un décile spécifique à une date donnée.
 
-        Args:
+        Paramètres:
             decile (list): Liste des tickers constituant le décile.
             market_data (dict): Dictionnaire des données de marché.
             date (str): Date pour laquelle calculer la matrice de covariance.
             frequency (str): Fréquence des données 
             rebalance_at (str): Moment de rebalancement
 
-        Returns:
+        Retourne:
             DataFrame: Matrice de covariance ajustée pour le décile spécifié à la date donnée.
         """
         previous_date = Utilities.get_rebalancing_date(date, sign = -1, frequency=frequency, 
@@ -150,11 +151,11 @@ class Estimation:
         Calcule le ratio de diversification pour un portefeuille avec des poids donnés 
         et une matrice de covariance.
 
-        Args:
+        Paramètres:
             weights (array-like): Poids des actifs dans le portefeuille.
             cov_matrix (DataFrame): Matrice de covariance des rendements des actifs.
 
-        Returns:
+        Retourne:
             float: Ratio de diversification calculé.
         """
         weighted_vol = np.sqrt(np.diag(cov_matrix) @ weights.T)
@@ -166,9 +167,9 @@ class Estimation:
     @staticmethod
     def optimize_diversification_ratio(decile, market_data, date, weights, frequency, rebalancing_at):
         """
-        Optimise les poids du portefeuille pour maximiser le ratio de diversification.
+        Optimise les poids du portefeuille en maximisant le ratio de diversification.
 
-        Args:
+        Paramètres:
             decile (list): Liste des tickers constituant le décile à optimiser.
             market_data (dict): Dictionnaire des données de marché.
             date (str): Date à laquelle optimiser les poids.
@@ -176,7 +177,7 @@ class Estimation:
             frequency (str): Fréquence des données 
             rebalancing_at (str): Moment de rebalancement
 
-        Returns:
+        Retourne:
             dict: Dictionnaire des poids optimisés pour chaque ticker dans le décile.
         """
         cov = Estimation.__calc_cov_matrix(decile, market_data, date, frequency, rebalancing_at)

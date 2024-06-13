@@ -10,7 +10,7 @@ class IndexPlotter:
     @staticmethod
     def plot_track_records(asset_indices, nber_data):
         """
-        Trace les track de plusieurs stratégies
+        Affiche les trajectoires de rcihesse culmulée de plusieurs stratégies
 
         Paramètres :
         - asset_indices : Dictionnaire des stratégies.
@@ -58,11 +58,11 @@ class IndexPlotter:
     @staticmethod
     def _plot_holding_moments(asset_index, ax, is_2sided=False):
         """
-        Trace les moments de conservation des portefuilles alternatifs composant les 
+        Affiche les moments de conservation des portefuilles alternatifs composant les 
         stratégies de timing de volatilité
 
         Paramètres :
-        - asset_index : La stratggie pour lequellle tracer les moments de conservation.
+        - asset_index : La strattégie pour lequelle afficher les moments de conservation.
         - ax : L'axe sur lequel tracer.
         - is_2sided : Indique si la startégie de timing de volatilité est la 2sided ou la version base.
         """
@@ -152,7 +152,7 @@ class IndexPlotter:
     @staticmethod
     def asset_indices_plot_under_diff_conditions(asset_indices, other_data, risk_free_rate_ticker, start_date, end_date, frequency, rebalance_at, ticker):
         """
-        Affiche des graphiques à barres des différentes stratégies dans différentes conditions de marché.
+        Affiche des graphiques à barres des stratégies dans différentes conditions de marché.
 
         Paramètres :
         - asset_indices : Dictionnaire des stratégies.
@@ -199,7 +199,7 @@ class IndexPlotter:
     @staticmethod
     def display_asset_indices_metrics(asset_indices, other_data, risk_free_rate_ticker):
         """
-        Affiche les métriques de performance et risques des stratégies.
+        Affiche les métriques de performance et de risque des stratégies.
 
         Paramètres :
         - asset_indices : Dictionnaire des startégies.

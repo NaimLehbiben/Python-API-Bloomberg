@@ -182,7 +182,7 @@ class FinanceApp(tk.Tk):
 
             asset_index.get_port_file(strategy_name)
 
-            Utilities.save_data_to_pickle(asset_index, file_name=strategy_name, folder_subpath="asset_indices\\monthly_vol_scaling")
+            #Utilities.save_data_to_pickle(asset_index, file_name=strategy_name, folder_subpath="asset_indices\\monthly_max_div")
 
             results = "Backtest completed successfully!"
             messagebox.showinfo("Backtest Results", results)

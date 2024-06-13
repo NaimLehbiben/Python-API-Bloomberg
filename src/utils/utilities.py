@@ -9,11 +9,29 @@ import utils.constant as constant
 
 class Utilities:
     """
-    Utility class
+    Classe utilitaire
     """
 
     @staticmethod
     def create_rebalancing_calendar(start_date: datetime, end_date: datetime, frequency: str, rebalance_at: str):
+        """
+        Crée un calendrier de rebalancement basé sur les business dates du NYSE (New York Stock Exchange) 
+        entre start_date et end_date.
+
+        Paramètres:
+        - start_date (datetime): La date de début.
+        - end_date (datetime): La date de fin.
+        - frequency (str): La fréquence du rééquilibrage. Doit être une des valeurs suivantes : 'monthly', 'quarterly', 'semiannually', 'annually'.
+        - rebalance_at (str): Indique si le rééquilibrage doit avoir lieu au début ou à la fin de la période. Doit être 'start' ou 'end'.
+
+        Exceptions:
+        - ValueError: Si start_date est après end_date.
+        - ValueError: Si frequency n'est pas parmi les valeurs acceptées.
+        - ValueError: Si rebalance_at n'est pas parmi les valeurs acceptées.
+
+        Retourne:
+        - list: Une liste de dates de rebalancement.
+        """
         if start_date > end_date:
             raise ValueError("start_date must be before end_date.")
         if frequency not in ['monthly', 'quarterly', 'semiannually', 'annually']:
@@ -57,6 +75,19 @@ class Utilities:
 
     @staticmethod
     def get_rebalancing_date(date, sign, frequency, rebalance_at, step=None):
+        """
+        Renoie la date de rebalancement à partir d'une date donnée.
+
+        Paramètres:
+        - date (datetime): La date de référence pour le calcul.
+        - sign (int): Indicateur de direction (1 pour avancer dans le temps, -1 pour reculer).
+        - frequency (str): La fréquence du rééquilibrage (par exemple, 'monthly', 'quarterly', 'semiannually', 'annually').
+        - rebalance_at (str): Indique si le rééquilibrage doit avoir lieu au début ou à la fin de la période.
+        - step (int, optionnel): Nombre de périodes à avancer/reculer. Si None, utilise les valeurs par défaut pour chaque fréquence.
+
+        Retourne:
+        - datetime.date: La date de rebalancement valide.
+        """
         if step is None:
             steps_dict = {'monthly': 1, 'quarterly': 3, 'semiannually': 6, 'annually': 12}
             step = steps_dict[frequency]
@@ -83,6 +114,21 @@ class Utilities:
 
     @staticmethod
     def check_universe(universe, market_data, date, next_date):
+        """
+        Vérifie que tous les tickers de l'univers ont des données disponibles entre deux dates.
+
+        Paramètres:
+        - universe (list): Liste des tickers à vérifier.
+        - market_data (dict): Dictionnaire contenant les données de marché.
+        - date (datetime): Date de début de la vérification.
+        - next_date (datetime): Date de fin de la vérification.
+
+        Retourne:
+        - list: Liste des tickers avec des données valides entre les deux dates.
+
+        Exceptions:
+        - Exception: Si l'univers d'investissement est vide après vérification.
+        """
         universe = [ticker for ticker in universe if Utilities.check_data_between_dates(market_data[ticker], date, next_date)]
         if not universe:
             raise Exception("Investment universe is empty!")
@@ -90,6 +136,17 @@ class Utilities:
 
     @staticmethod
     def check_data_between_dates(df, start_date, end_date):
+        """
+        Vérifie si des données existent entre deux dates dans un DataFrame.
+
+        Paramètres:
+        - df (pd.DataFrame): DataFrame contenant les données de marché.
+        - start_date (datetime): Date de début.
+        - end_date (datetime): Date de fin.
+
+        Retourne:
+        - bool: True si des données existent entre les deux dates, sinon False.
+        """
         if start_date not in df.index or end_date not in df.index:
             return False
         if start_date == end_date:
@@ -101,6 +158,17 @@ class Utilities:
 
     @staticmethod
     def calculate_past_vol(price_history: pd.DataFrame, date: datetime, previous_date) -> float:
+        """
+        Calcule la volatilité historique entre deux dates.
+
+        Paramètres:
+        - price_history (pd.DataFrame): Historique des prix.
+        - date (datetime): Date de fin pour le calcul.
+        - previous_date (datetime): Date de début pour le calcul.
+
+        Retourne:
+        - float: La volatilité calculée.
+        """
         price_history = price_history.loc[previous_date:date]
         returns = price_history.iloc[:, 0].pct_change().dropna()
         volatility = np.std(returns)
@@ -108,6 +176,18 @@ class Utilities:
 
     @staticmethod
     def get_ptf_returns(data, tickers, start_date, end_date):
+        """
+        Calcule les rendements pondérés d'un portefeuille entre deux dates.
+
+        Paramètres:
+        - data (dict): Dictionnaire contenant les données de marché pour chaque ticker.
+        - tickers (dict): Dictionnaire des tickers et de leurs pondérations dans le portefeuille.
+        - start_date (datetime): Date de début pour le calcul des rendements.
+        - end_date (datetime): Date de fin pour le calcul des rendements.
+
+        Retourne:
+        - pd.Series: Série des rendements pondérés par date.
+        """
         selected_data = pd.concat([data[ticker].loc[start_date:end_date] for ticker in tickers.keys() if ticker in data], axis=1)
         returns = selected_data.pct_change(fill_method=None)
         weighted_returns = returns.apply(lambda col: col * tickers.get(col.name, 0.0))
@@ -116,6 +196,16 @@ class Utilities:
 
     @staticmethod
     def get_data_from_pickle(file_name: str, folder_subpath: str = None):
+        """
+        Charge des données à partir d'un fichier pickle.
+
+        Paramètres:
+        - file_name (str): Nom du fichier pickle.
+        - folder_subpath (str, optionnel): Sous-chemin du dossier contenant le fichier pickle.
+
+        Retourne:
+        - dict: Les données chargées depuis le fichier pickle.
+        """
         if folder_subpath is None:
             file_path = os.path.join(os.path.dirname(__file__).replace("src\\utils", "data"), file_name + ".pkl")
         else:
@@ -126,6 +216,14 @@ class Utilities:
 
     @staticmethod
     def save_data_to_pickle(data, file_name, folder_subpath: str = None):
+        """
+        Sauvegarde des données dans un fichier pickle.
+
+        Paramètres:
+        - data (dict): Les données à sauvegarder.
+        - file_name (str): Nom du fichier pickle.
+        - folder_subpath (str, optionnel): Sous-chemin du dossier où sauvegarder le fichier pickle.
+        """
         if folder_subpath is None:
             file_path = os.path.join(os.path.dirname(__file__).replace("src\\utils", "data"), file_name + ".pkl")
         else:
@@ -135,6 +233,16 @@ class Utilities:
 
     @staticmethod
     def load_asset_indices(names_list: list[str], folder_subpath: str):
+        """
+        Charge les stratégies à partir de fichiers pickle.
+
+        Paramètres:
+        - names_list (list[str]): Liste des noms des fichiers pickle.
+        - folder_subpath (str): Sous-chemin du dossier contenant les fichiers pickle.
+
+        Retourne:
+        - dict: Dictionnaire des stratégies chargés.
+        """
         asset_indices = {}
         for name in names_list:
             asset_indices.update({name: Utilities.get_data_from_pickle(name, folder_subpath)})
