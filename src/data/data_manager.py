@@ -9,14 +9,14 @@ class DataManager:
         """
         Obtient les compositions historiques pour un ticker donné entre deux dates.
 
-        Args:
+        Paramètres:
             start_date (datetime): La date de début.
             end_date (datetime): La date de fin.
             ticker (str): Le ticker de l'actif.
             frequency (str): La fréquence de rebalancement.
             rebalance_at (str): Le moment du rebalancement.
 
-        Returns:
+        Retourne:
             dict: Un dictionnaire où les clés sont les dates de rebalancement et les valeurs sont des listes de tickers.
         """
         strFields = ["INDX_MWEIGHT_HIST"]
@@ -40,13 +40,13 @@ class DataManager:
         """
         Obtient les prix historiques pour une liste de tickers entre deux dates.
 
-        Args:
+        Paramètres:
             start_date (datetime): La date de début.
             end_date (datetime): La date de fin.
             tickers (list[str]): La liste des tickers.
             curr (str): La devise.
 
-        Returns:
+        Retourne:
             tuple: Un tuple contenant un dictionnaire des données de marché globales et une liste des tickers sans données.
         """
         blp = BLP()
@@ -74,7 +74,7 @@ class DataManager:
         """
         Récupère les données nécessaires pour effectuer un backtest.
 
-        Args:
+        Paramètres:
             start_date (datetime): La date de début.
             end_date (datetime): La date de fin.
             ticker (str): Le ticker de l'actif.
@@ -83,7 +83,7 @@ class DataManager:
             rebalance_at (str): Le moment du rebalancement.
             sign (int): Indicateur de direction du rebalancement.
 
-        Returns:
+        Retourne:
             tuple: Un tuple contenant les compositions historiques par date et les données de marché globales.
         """
         # Obtention des compositions historiques
@@ -105,14 +105,14 @@ class DataManager:
         """
         Récupère d'autres données de marché américaines pour une période donnée.
 
-        Args:
+        Paramètres:
             start_date (datetime): La date de début.
             end_date (datetime): La date de fin.
             ticker (str): Le ticker de l'actif.
             risk_free_rate_ticker (str): Le ticker du taux sans risque.
             curr (str): La devise.
 
-        Returns:
+        Retourne:
             dict: Un dictionnaire des autres données de marché américaines.
         """
         tickers = ["USRINDEX Index", risk_free_rate_ticker]

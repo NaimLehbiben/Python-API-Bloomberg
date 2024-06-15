@@ -38,13 +38,13 @@ class BLP():
             """
             Effectue une requête BDS (Bulk Data Service) pour récupérer les données demandées.
 
-            Args:
+            Paramètres:
                 strSecurity (str ou list): Les titres pour lesquels les données sont demandées.
                 strFields (str ou list): Les champs demandés.
                 strOverrideField (str): Le champ à remplacer.
                 strOverrideValue (str): La valeur de remplacement pour le champ spécifié.
 
-            Returns:
+            Retourne:
                 dict: Un dictionnaire contenant les données demandées.
             """
             # Création de la demande
@@ -135,7 +135,7 @@ class BLP():
             """
             Récupère les données historiques pour un ensemble de titres et de champs.
 
-            Args:
+            Paramètres:
                 strSecurity (list de str): Liste des tickers.
                 strFields (list de str): Liste des champs, doivent être des champs statiques (par exemple, px_last au lieu de last_price).
                 startdate (date): Date de début.
@@ -146,7 +146,7 @@ class BLP():
                 days (str): Option de remplissage des jours non négociables : NON_TRADING_WEEKDAYS*, ALL_CALENDAR_DAYS ou ACTIVE_DAYS_ONLY.
                 fill (str): Méthode de remplissage des jours non négociables : PREVIOUS_VALUE, NIL_VALUE.
 
-            Returns:
+            Retourne:
                 dict: Un dictionnaire contenant les données demandées.
             """
 

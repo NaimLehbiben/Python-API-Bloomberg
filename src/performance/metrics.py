@@ -8,7 +8,12 @@ from src.utils.constant import SLOPE_ALPHA, REBALANCING_MOMENT
 class MetricsCalculator:
     def __init__(self, other_data, risk_free_rate_ticker):
         """
-        Initialize the MetricsCalculator with the given risk-free rate ticker and other data.
+        Classe calculant les diverses métriques financières d'un indice d'actifs.
+
+        Attributs:
+        - risk_free_rate_ticker (str): Le ticker du taux sans risque.
+        - risk_free_rate (float): Le taux sans risque calculé à partir des données fournies.
+        - other_data (dict): Les autres données nécessaires pour les calculs.
         """
         self.risk_free_rate_ticker = risk_free_rate_ticker
         self.risk_free_rate = self._get_risk_free_rate(other_data)
@@ -16,7 +21,13 @@ class MetricsCalculator:
         
     def _get_risk_free_rate(self, other_data):
         """
-        Get the risk-free rate from the other data provided.
+        Obtient le taux sans risque à partir des autres données fournies.
+
+        Paramètres:
+        - other_data (dict): Les autres données nécessaires pour les calculs.
+
+        Retourne:
+        - float: Le taux sans risque annualisé.
         """
         if self.risk_free_rate_ticker in other_data:
             return other_data[self.risk_free_rate_ticker].mean() / 252  
@@ -25,7 +36,13 @@ class MetricsCalculator:
 
     def calculate_total_return(self, asset_index):
         """
-        Calculate the total return of the asset index.
+        Calcule le rendement total de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+
+        Retourne:
+        - float: Le rendement total en pourcentage.
         """
         prices = [quote.price for quote in asset_index.price_history]
         total_return = (prices[-1] / prices[0] - 1) * 100
@@ -33,7 +50,13 @@ class MetricsCalculator:
 
     def calculate_annualized_return(self, asset_index):
         """
-        Calculate the annualized return of the asset index.
+        Calcule le rendement annualisé de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+
+        Retourne:
+        - float: Le rendement annualisé en pourcentage.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -45,8 +68,14 @@ class MetricsCalculator:
 
     def calculate_volatility(self, asset_index, period='annual'):
         """
-        Calculate the volatility of the asset index.
-        period: 'annual', 'monthly', 'daily'
+        Calcule la volatilité de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+        - period (str): La période pour le calcul de la volatilité ('annual', 'monthly', 'daily').
+
+        Retourne:
+        - float: La volatilité annualisée en pourcentage.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -68,7 +97,13 @@ class MetricsCalculator:
 
     def calculate_sharpe_ratio(self, asset_index):
         """
-        Calculate the Sharpe ratio of the asset index.
+        Calcule le ratio de Sharpe de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+
+        Retourne:
+        - float: Le ratio de Sharpe.
         """
         mean_return = self.calculate_annualized_return(asset_index)
         volatility = self.calculate_volatility(asset_index, period='annual')
@@ -79,7 +114,13 @@ class MetricsCalculator:
 
     def calculate_max_drawdown(self, asset_index):
         """
-        Calculate the maximum drawdown of the asset index.
+        Calcule le drawdown maximal de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+
+        Retourne:
+        - float: Le drawdown maximal en pourcentage.
         """
         prices = [quote.price for quote in asset_index.price_history]
         cumulative_returns = (1 + pd.Series(prices).pct_change().dropna()).cumprod()
@@ -92,7 +133,13 @@ class MetricsCalculator:
     
     def calculate_semi_variance(self, asset_index):
         """
-        Calculate the semi-variance of the asset index.
+        Calcule la semi-variance de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+
+        Retourne:
+        - float: La semi-variance annualisée en pourcentage.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -106,7 +153,13 @@ class MetricsCalculator:
 
     def calculate_sortino_ratio(self, asset_index):
         """
-        Calculate the Sortino ratio of the asset index.
+        Calcule le ratio de Sortino de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+
+        Retourne:
+        - float: Le ratio de Sortino.
         """
         mean_return = self.calculate_annualized_return(asset_index)
         semi_variance = self.calculate_semi_variance(asset_index)
@@ -115,7 +168,14 @@ class MetricsCalculator:
 
     def calculate_information_ratio(self, asset_index, benchmark_data):
         """
-        Calculate the Information ratio of the asset index.
+        Calcule le ratio d'information de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+        - benchmark_data (BenchmarkData): Les données de de l'indice de référence.
+
+        Retourne:
+        - float: Le ratio d'information.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -132,7 +192,14 @@ class MetricsCalculator:
     
     def calculate_var(self, asset_index, confidence_level=0.95):
         """
-        Calculate the historical Value at Risk (VaR) of the asset index.
+        Calcule la Value at Risk historique (VaR) de l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+        - confidence_level (float): Le niveau de confiance pour le calcul de la VaR (par défaut 0.95).
+
+        Retourne:
+        - float: La VaR en pourcentage.
         """
         prices = [quote.price for quote in asset_index.price_history]
         returns = pd.Series(prices).pct_change().dropna()
@@ -143,7 +210,14 @@ class MetricsCalculator:
     
     def calculate_all_metrics(self, asset_index, benchmark_data):
         """
-        Calculate all relevant metrics for the asset index.
+        Calcule toutes les métriques pertinentes pour l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+        - benchmark_data (BenchmarkData): Les données de référence.
+
+        Retourne:
+        - dict: Un dictionnaire contenant toutes les métriques calculées.
         """
         return {
             'Total Return': self.calculate_total_return(asset_index),
@@ -161,7 +235,14 @@ class MetricsCalculator:
 
     def calculate_core_metrics(self, asset_index, benchmark_data):
         """
-        Calculate the core metrics for the asset index.
+        Calcule les métriques de base pour l'indice d'actifs.
+
+        Paramètres:
+        - asset_index (AssetIndex): L'indice d'actifs.
+        - benchmark_data (BenchmarkData): Les données de référence.
+
+        Retourne:
+        - dict: Un dictionnaire contenant les métriques de base calculées.
         """
         return {
             'Total Return': self.calculate_total_return(asset_index),
@@ -174,24 +255,41 @@ class MetricsCalculator:
         }
 
 
-    def calculate_switch_performance(asset_indices, frequency):
-        
+    def calculate_switch_performance(self, asset_indices, frequency):
+
+        """
+        Calcule la sur ou sous performance générée par la détention des portefeuilles alternatifs
+        pour les différentes stratégies de timing de volatilités.
+
+        Args:
+            asset_indices (dict): Dictionnaire contenant les stratégies
+            frequency (str): Fréquence de rebalancement.
+
+        Retourne:
+            dict: Un dictionnaire contenant les métriques de performance de switch :
+        """
         correct_switches = 0
         incorrect_switches = 0
         correct_switch_performance = 0
         incorrect_switch_performance = 0
         total_switches = 0
+        holding_low_percentage = 0
+        holding_high_percentage = 0
 
+
+        low_price_df = asset_indices["LowVolatilityDecile"].quotes_to_dataframe()
+        high_price_df = asset_indices["HighVolatilityDecile"].quotes_to_dataframe()  
+        
         if "VolatilityTiming" in asset_indices.keys():
-            low_price_df = asset_indices["LowVolatilityDecile"].quotes_to_dataframe()
-            high_price_df = asset_indices["HighVolatilityDecile"].quotes_to_dataframe()
             ptf_hold_dict = asset_indices["VolatilityTiming"].strategy.ptf_hold
-            for date in ptf_hold_dict.keys()[1:]:
+            holding_low_percentage = 100 * sum(1 for ptf in ptf_hold_dict.values() if ptf == 'Low') / len(ptf_hold_dict)
+            holding_high_percentage = 100 * sum(1 for ptf in ptf_hold_dict.values() if ptf == 'High') / len(ptf_hold_dict)
+            for date in list(ptf_hold_dict.keys())[1:-1]:
                 if ptf_hold_dict[date] != "Low":
                     total_switches +=1
-                    previous_date = Utilities.get_rebalancing_date(date, -1, frequency, REBALANCING_MOMENT) 
-                    perf_base = (low_price_df.loc[date] / low_price_df.loc[previous_date] - 1) *100
-                    perf_high = (high_price_df.loc[date] / high_price_df.loc[previous_date] - 1) *100
+                    next_date = Utilities.get_rebalancing_date(date, 1, frequency, REBALANCING_MOMENT) 
+                    perf_base = ((low_price_df.loc[next_date] / low_price_df.loc[date] - 1) *100).iloc[0]
+                    perf_high = ((high_price_df.loc[next_date] / high_price_df.loc[date] - 1) *100).iloc[0]
 
                     if perf_high > perf_base:
                         correct_switches +=1
@@ -200,16 +298,69 @@ class MetricsCalculator:
                         incorrect_switches +=1
                         incorrect_switch_performance += (perf_high - perf_base)
 
+        elif "VolatilityTiming2sided" in asset_indices.keys():
+            mid_price_df = asset_indices["MidVolatilityDecile"].quotes_to_dataframe() 
+            ptf_hold_dict = asset_indices["VolatilityTiming2sided"].strategy.ptf_hold
+            holding_low_percentage = 100 * sum(1 for ptf in ptf_hold_dict.values() if ptf == 'Low') / len(ptf_hold_dict)
+            holding_high_percentage = 100 * sum(1 for ptf in ptf_hold_dict.values() if ptf == 'High') / len(ptf_hold_dict)
+            for date in list(ptf_hold_dict.keys())[1:-1]:
+                if ptf_hold_dict[date] == "Low":
+                    total_switches +=1
+                    next_date = Utilities.get_rebalancing_date(date, 1, frequency, REBALANCING_MOMENT)
+
+                    perf_base = ((mid_price_df.loc[next_date] / mid_price_df.loc[date] - 1) *100).iloc[0]
+                    perf_low = ((low_price_df.loc[next_date] / low_price_df.loc[date] - 1) *100).iloc[0]
+
+                    if perf_low > perf_base:
+                        correct_switches +=1
+                        correct_switch_performance += (perf_low - perf_base)
+                    else:
+                        incorrect_switches +=1
+                        incorrect_switch_performance += (perf_low - perf_base)
+                elif ptf_hold_dict[date] == "High":
+                    total_switches +=1
+                    next_date = Utilities.get_rebalancing_date(date, 1, frequency, REBALANCING_MOMENT)
+
+                    perf_base = ((mid_price_df.loc[next_date] / mid_price_df.loc[date] - 1) *100).iloc[0]
+                    perf_high = ((high_price_df.loc[next_date] / high_price_df.loc[date] - 1) *100).iloc[0]
+
+                    if perf_high > perf_base:
+                        correct_switches +=1
+                        correct_switch_performance += (perf_high - perf_base)
+                    else:
+                        incorrect_switches +=1
+                        incorrect_switch_performance += (perf_high - perf_base)
+
+                        
         return {
             'Correct Switch Percentage': 100 * correct_switches / total_switches,
             'Incorrect Switch Percentage': 100 * incorrect_switches / total_switches,
-            'Correct Switch Average Performance': correct_switch_performance,
-            'Incorrect Switch Average Performance': incorrect_switch_performance
+            'Correct Switch Total Performance': correct_switch_performance,
+            'Incorrect Switch Total Performance': incorrect_switch_performance,
+            'Holding Low Percentage': holding_low_percentage, 
+            'Holding High Percentage': holding_high_percentage
         }
 
 
 
     def _calc_good_bad_mkt_stats(self, asset_indices, start_date, end_date, frequency, rebalance_at, ticker):
+        """
+        Calcule les statistiques des stratégies en cas de bonne et mauvaise conjecture
+
+        Args:
+            asset_indices (dict): Dictionnaire contenant les strtégies.
+            start_date (str): Date de début au format 'YYYY-MM-DD'.
+            end_date (str): Date de fin au format 'YYYY-MM-DD'.
+            frequency (str): Fréquence de rebalancement
+            rebalance_at (str): Moment du rebalancement 
+            ticker (str): Ticker utilisé de l'indice de référence
+
+        Retourne:
+            tuple: Les statistiques moyennes pour chaque stratégies en cas de bonnes 
+            et mauvaises conditions de marché
+      
+        """
+        
         index_returns = self.other_data[ticker].pct_change().dropna()
         risk_free_rate = self.other_data[self.risk_free_rate_ticker] / 100
         rebalancing_dates = Utilities.create_rebalancing_calendar(start_date, end_date, frequency, rebalance_at)

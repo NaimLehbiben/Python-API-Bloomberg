@@ -14,7 +14,7 @@ class Position:
             ticker (str): Le symbole boursier de l'actif associé à la position.
             weight (float, optional): La pondération de la position dans le portefeuille (la valeur par défaut est 0).
 
-        Returns:
+        Retourne:
             None
         """
         self.ticker = ticker
